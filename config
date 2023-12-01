@@ -1,0 +1,71 @@
+
+
+###### SPARK CONF ######
+#SPARK_MASTER_HOST=spark-master
+#SPARK_MASTER_PORT=7077
+
+#SPARK_WORKER_CORES=1
+#SPARK_CONF_DIR=/opt/spark/conf
+
+###### HDFS Website conf ######
+CORE-SITE.XML_hadoop.http.staticuser.user=root
+CORE-SITE.XML_hadoop.proxyuser.hue.hosts=*
+CORE-SITE.XML_hadoop.proxyuser.hue.groups=*
+CORE-SITE.XML_io.compression.codecs=org.apache.hadoop.io.compress.SnappyCodec
+HDFS-SITE.XML_dfs.webhdfs.enabled=true
+HDFS-SITE.XML_dfs.permissions.enabled=false
+HDFS-SITE.XML_dfs.namenode_datanode.registration.ip-hostname-check=false
+HDFS-SITE.XML_dfs.replication=3
+HDFS-SITE.XML_dfs.journalnode.edits.dir=/data/journalnod
+
+###### HDFS HA conf ########
+CORE-SITE.XML_fs.defaultFS=hdfs://my_ha_cluster
+#Declares an entity made of namenodes
+HDFS-SITE.XML_dfs.nameservices=my_ha_cluster
+#Defines canonical names for namenodes in sh entity
+HDFS-SITE.XML_dfs.ha.namenodes.my_ha_cluster=nn1,nn2
+#Define RPC addresses for such namenodes
+HDFS-SITE.XML_dfs.namenode.rpc-address.my_ha_cluster.nn1=namenode1:9820
+HDFS-SITE.XML_dfs.namenode.rpc-address.my_ha_cluster.nn2=namenode2:9820
+#Strategy to ensure that both NN can't be active: rn, just does nothing
+HDFS-SITE.XML_dfs.ha.fencing.methods=shell(/bin/true)
+#How to manage the two namenodes, two classes possibile
+HDFS-SITE.XML_dfs.client.failover.proxy.provider.my_ha_cluster=org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider
+#Automatically recover from namenode failures, need Zookeper
+HDFS-SITE.XML_dfs.ha.automatic-failover.enabled=false
+
+#Where the NNs can share edit logs
+HDFS-SITE.XML_dfs.namenode.shared.edits.dir=qjournal://journal1:8485;journal2:8485;journal3:8485/my_ha_cluster
+
+###### YARN CONF ######
+MAPRED-SITE.XML_mapreduce.framework.name=yarn
+MAPRED-SITE.XML_yarn.app.mapreduce.am.env=HADOOP_MAPRED_HOME=$HADOOP_HOME
+MAPRED-SITE.XML_mapreduce.map.env=HADOOP_MAPRED_HOME=$HADOOP_HOME
+MAPRED-SITE.XML_mapreduce.reduce.env=HADOOP_MAPRED_HOME=$HADOOP_HOME
+
+YARN-SITE.XML_yarn.resourcemanager.hostname=resourcemanager
+YARN-SITE.XML_yarn.nodemanager.pmem-check-enabled=false
+YARN-SITE.XML_yarn.nodemanager.delete.debug-delay-sec=600
+YARN-SITE.XML_yarn.nodemanager.vmem-check-enabled=false
+YARN-SITE.XML_yarn.nodemanager.aux-services=mapreduce_shuffle
+
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.maximum-applications=10000
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.maximum-am-resource-percent=0.1
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.resource-calculator=org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.queues=default
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.capacity=100
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.user-limit-factor=1
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.maximum-capacity=100
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.state=RUNNING
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.acl_submit_applications=*
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.acl_administer_queue=*
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.node-locality-delay=40
+#CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.queue-mappings=
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.queue-mappings-override.enable=false
+
+#SPARK-DEFAULTS.CONF_spark.eventLog.enabled=true
+#SPARK-DEFAULTS.CONF_spark.eventLog.dir=hdfs://fs:9000/sparklog
+#SPARK-DEFAULTS.CONF_spark.yarn.historyServer.address=spark-history-server:18080
+#SPARK-DEFAULTS.CONF_spark.executor.instances=4
+#SPARK-DEFAULTS.CONF_spark.executo
+#SPARK-ENV.SH_SPARK_HISTORY_OPTS="-Dspark.history.fs.logDirectory=hdfs://namenode:9000/sparklog"

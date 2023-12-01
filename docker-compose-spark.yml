@@ -1,0 +1,56 @@
+version: "3"
+services:
+  spark-master:
+    image: apache/spark:latest
+    container_name: spark-master
+    command: 
+       - "/opt/spark/sbin/start-master.sh"
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    env_file:
+      - ./config
+    volumes:
+      - ./conf:/opt/spark/conf/
+    ports:
+      - ${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT}  # Porta per l'interfaccia web del master
+    # Aggiungi questa riga per mantenere il container in esecuzione
+
+
+  spark-worker:
+    image: apache/spark:latest
+    container_name: spark-worker
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    # - SLEEP_SECONDS:30
+    command: "/opt/spark/sbin/start-worker.sh spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT}"
+    # command: "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT}"
+    # --properties-file /opt/spark/conf/spark-defaults.conf
+    env_file:
+      - ./config
+    # Aggiungi questa riga per mantenere il container in esecuzione
+    volumes:
+      - ./conf:/opt/spark/conf/
+    depends_on:
+      - spark-master
+   # ports:
+   #   - "8081:8081"
+   # depends_on:
+   #   - spark-master
+
+  spark-history-server:
+    image: apache/spark:latest
+    container_name: spark-history-server
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    # - SLEEP_SECONDS:30
+    #command: "/opt/spark/sbin/start-worker.sh spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT}"
+    command: "/opt/spark/sbin/start-history-server.sh"
+    # --properties-file /opt/spark/conf/spark-defaults.conf
+    env_file:
+      - ./config
+    # Aggiungi questa riga per mantenere il container in esecuzione
+    volumes:
+      - ./conf:/opt/spark/conf/
+      - /tmp/spark-events-local:/tmp/spark-events
+    depends_on:
+      - spark-master
