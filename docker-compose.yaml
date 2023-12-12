@@ -1,144 +1,207 @@
 version: "3"
+
 services:
-   namenode1:
-      image: apache/hadoop:3
-      hostname: namenode1
-      ports:
-         - 9870:9870
-      env_file:
-         - ./config
-      environment:
-          ENSURE_NAMENODE_DIR: "/tmp/hadoop-hadoop/dfs/name"
-          SLEEP_SECONDS: 20
-      command: ["hdfs", "namenode"]
-      volumes:
-      #  - ./namenodeformat.sh:/opt/launcher/plugins/012_namenodeformat/namenodeformat.sh
-         - hadoop_namenode:/hadoop/dfs/name
+  namenode:
+    image: apache/hadoop:3
+    container_name: namenode
+    restart: always
+    ports:
+      - 9870:9870
+      - 9000:9000
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    env_file:
+      - ./.env
+      - ./hadoop.conf
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /hadoop/dfs/name
+        sudo chown hadoop /hadoop/dfs/name
+        if [ ! -d $NAMEDIR ]; then
+          echo "Namenode name directory not found: $NAMEDIR"
+          exit 2
+        fi
 
-   namenode2:
-      image: apache/hadoop:3
-      hostname: namenode2
-      ports:
-         - 9871:9870
-      env_file:
-         - ./config
-      environment:
-          ENSURE_STANDBY_NAMENODE_DIR: "/tmp/hadoop-hadoop/dfs/name"
-          SLEEP_SECONDS: 40
-      command: ["hdfs", "namenode"]
-      volumes:
-      #   - ./namenodeformat.sh:/opt/launcher/plugins/012_namenodeformat/namenodeformat.sh
-         - hadoop_namenode:/hadoop/dfs/name
-         
-   journal1:
-      image: apache/hadoop:3
-      hostname: journal1
-      env_file:
-        - ./config
-      command: ["hdfs", "journalnode"]
-     # environment:
-        # SLEEP_SECONDS: 50
-   journal2:
-      image: apache/hadoop:3
-      hostname: journal2
-      env_file:
-        - ./config
-      command: ["hdfs", "journalnode"]
-     # environment:
-        # SLEEP_SECONDS: 50
-   journal3:
-      image: apache/hadoop:3
-      hostname: journal3
-      env_file:
-        - ./config
-      command: ["hdfs", "journalnode"]
-     # environment:
-       #  SLEEP_SECONDS: 50
-      
-   datanode:
-      image: apache/hadoop:3
-      command: ["hdfs", "datanode"]
-      env_file:
-        - ./config
-      environment:
-         SLEEP_SECONDS: 50
+        if [ -z "$CLUSTER_NAME" ]; then
+          echo "Cluster name not specified"
+          export CLUSTER_NAME=test
+          echo $CLUSTER_NAME cluster_name
+        fi
 
-   activator:
-      image: apache/hadoop:3
-      command: ["hdfs", "haadmin", "-transitionToActive", "nn1"]
-      env_file:
-        - ./config
-      environment:
-         SLEEP_SECONDS: 60
+        if [ "`ls -A $NAMEDIR`" == "" ]; then
+          echo "Formatting namenode name directory: $NAMEDIR"
+          /opt/hadoop/bin/hdfs --config $HADOOP_CONF_DIR namenode -format $CLUSTER_NAME
+        else
+          echo "$NAMEDIR exists!"
+        fi
+        hdfs --config $HADOOP_CONF_DIR namenode
 
-   resourcemanager:
-      image: apache/hadoop:3
-      hostname: resourcemanager
-      command: ["yarn", "resourcemanager"]
-      ports:
-         - 8088:8088
-      env_file:
-        - ./config
-      volumes:
-        - ./test.sh:/opt/test.sh
-      environment:
-         SLEEP_SECONDS: 60
-        
-   nodemanager:
-      image: apache/hadoop:3
-      command: ["yarn", "nodemanager"]
-      env_file:
-        - ./config
-      environment:
-         SLEEP_SECONDS: 60
-   
-   spark-master:
-      image: apache/spark:v3.3.0
-      container_name: spark-master
-      command: 
-         - "/opt/spark/sbin/start-master.sh"
-      environment:
-         - SPARK_NO_DAEMONIZE=true
-         - SLEEP_SECONDS=60
-      env_file:
-         - ./spark-config
-      volumes:
-         - ./conf:/opt/spark/conf/
-      ports:
-         - ${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT} 
+  datanode:
+    image: apache/hadoop:3
+    container_name: datanode
+    restart: always
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./.env
+      - ./hadoop.conf
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo $DATADIR
+        mkdir -p /hadoop/dfs/data
+        sudo chown hadoop /hadoop/dfs/data
+        ls -ld $DATADIR
+        if [ ! -d $DATADIR ]; then
+          echo "Datanode data directory not found: $DATADIR"
+          exit 2
+        fi
+        hdfs --config $HADOOP_CONF_DIR datanode
+  
+  resourcemanager:
+    image: apache/hadoop:3
+    container_name: resourcemanager
+    restart: always
+    env_file:
+      - ./hadoop.conf
+      - ./.env
+    ports:
+      - 8088:8088
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        /opt/hadoop/bin/yarn --config $HADOOP_CONF_DIR resourcemanager
 
-   spark-worker:
-      image: apache/spark:v3.3.0
-      container_name: spark-worker
-      environment:
-         - SPARK_NO_DAEMONIZE=true
-         - SLEEP_SECONDS=60
-      command: "/opt/spark/sbin/start-worker.sh spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT}"
-      env_file:
-         - ./spark-config
-      volumes:
-         - ./conf:/opt/spark/conf/
-      depends_on:
-         - spark-master
+  nodemanager:
+    image: apache/hadoop:3
+    container_name: nodemanager
+    restart: always
+    env_file:
+      - ./hadoop.conf
+      - ./.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/hadoop/bin/yarn --config $HADOOP_CONF_DIR nodemanager
 
-   spark-history-server:
-      image: apache/spark:v3.3.0
-      container_name: spark-history-server
-      environment:
-         - SPARK_NO_DAEMONIZE=true
-         - SLEEP_SECONDS=60
-      command: "/opt/spark/sbin/start-history-server.sh"
-      env_file:
-         - ./spark-config
-      volumes:
-         - ./conf:/opt/spark/conf/
-         - /tmp/spark-events-local:/tmp/spark-events
-      ports:
-         - ${SPARK_HISTORY_PORT}:${SPARK_HISTORY_PORT}
-      depends_on:
-         - spark-master
-      restart: always
+  historyserver:
+    image: apache/hadoop:3
+    container_name: historyserver
+    restart: always
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    env_file:
+      - ./hadoop.conf
+      - ./.env
+    ports:
+      - 19888:19888
+      - 8030:8030
+      - 8031:8031
+      - 8032:8032
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /hadoop/yarn/timeline
+        sudo chown hadoop /hadoop/yarn/timeline
+        /opt/hadoop/bin/yarn --config $HADOOP_CONF_DIR historyserver
+
+  spark-master:
+    image: apache/spark:3.3.3
+    container_name: spark-master
+    command: 
+       - "/opt/spark/sbin/start-master.sh"
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    env_file:
+      - ./.env
+      - ./hadoop.conf
+    volumes:
+      - ./conf_files/spark_conf/:/opt/spark/conf/
+    ports:
+      - ${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT}
+    depends_on:
+      - namenode
+
+  spark-worker:
+    image: apache/spark:3.3.3
+    container_name: spark-worker
+    command: "/opt/spark/sbin/start-worker.sh spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT}"
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    env_file:
+      - ./.env
+      - ./hadoop.conf
+    volumes:
+      - ./conf_files/spark_conf/:/opt/spark/conf/
+    restart: always
+    depends_on:
+      - spark-master
+
+  spark-history-server:
+    image: apache/spark:3.3.3
+    container_name: spark-history-server
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    env_file:
+      - ./.env
+      - ./hadoop.conf
+    volumes:
+      - ./conf_files/spark_conf/:/opt/spark/conf/
+      #- /tmp/spark-events-local:/tmp/spark-events
+    ports:
+      - 18080:18080
+    restart: always
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo $DATADIR
+        whoami
+        mkdir -p tmp/spark-events/
+        sudo chown spark tmp/spark-events/
+        ls -ld tmp/spark-events/
+        if [ ! -d tmp/spark-events/ ]; then
+          echo "Spark logs data directory not found"
+          exit 2
+        fi
+        /opt/spark/sbin/start-history-server.sh
+    depends_on:
+      - spark-master
+      - namenode
+
+  spark-yarn-test-env:
+    image: apache/spark:3.3.3
+    container_name: spark-yarn-test-env
+    command: "bash"
+    #    >
+    #    bash -c "
+    #    pip install -r ../tests/requirements.txt &&
+    #    export PATH=$PATH:/opt/spark/bin &&
+    #    tail -f /dev/null"
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - HADOOP_CONF_DIR=/opt/spark/conf
+    env_file:
+      - ./.env
+      - ./hadoop.conf
+    volumes:
+      - ./conf_files/spark_conf/:/opt/spark/conf/
+      - ./conf_files/hadoop_conf/core-site.xml:/opt/spark/conf/core-site.xml
+      - ./conf_files/hadoop_conf/hdfs-site.xml:/opt/spark/conf/hdfs-site.xml
+      - ./conf_files/hadoop_conf/yarn-site.xml:/opt/spark/conf/yarn-site.xml
+      - ./tests:/opt/spark/tests
+    stdin_open: true 
+    tty: true 
 
 volumes:
   hadoop_namenode:
   hadoop_datanode:
+  hadoop_historyserver:

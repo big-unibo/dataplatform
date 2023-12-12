@@ -1,0 +1,8 @@
+<configuration>
+<property><name>dfs.permissions.enabled</name><value>false</value></property>
+<property><name>dfs.datanode.data.dir</name><value>file:///hadoop/dfs/data</value></property>
+<property><name>dfs.webhdfs.enabled</name><value>true</value></property>
+<property><name>dfs.namenode_datanode.registration.ip-hostname-check</name><value>false</value></property>
+<property><name>dfs.namenode.name.dir</name><value>file:///hadoop/dfs/name</value></property>
+<property><name>dfs.replication</name><value>3</value></property>
+</configuration>
