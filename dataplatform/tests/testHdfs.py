@@ -1,25 +1,51 @@
+
+
 from hdfs import InsecureClient
+import os
+import sys
+import platform
+from dotenv import load_dotenv
+from kafka import KafkaConsumer
+from kafka import KafkaProducer
+import json
+import time
+import uuid
+from hdfs.util import HdfsError
 
-def create_hdfs_directory(client, directory_path):
-    try:
-        # Crea la directory utilizzando InsecureClient
-        client.makedirs(directory_path)
-        print(f"Directory {directory_path} creata con successo in HDFS.")
-    except Exception as e:
-        print(f"Errore durante la creazione della directory in HDFS: {e}")
+# Import external packages
+platform_sep = "\\" if platform.system() == "Windows" else "/"
+current_file_path_arr = os.path.abspath(__file__).split(platform_sep)
 
-# Specifica il percorso della directory in HDFS
-hdfs_directory_path = "/testDirectory"
+path1 = "../.testEnv"
+path2 = ".testEnv"
+if os.path.isfile(path1):
+    if load_dotenv(path1):
+        print("Loaded .env")
+elif os.path.isfile(path2):
+    if load_dotenv(path2):
+        print("Loaded .env")
+    
 
-# Specifica le informazioni di connessione per InsecureClient
-hdfs_nameservice = "my_ha_cluster"
-hdfs_port = 9820
+NAME_NODE = os.getenv('NAME_NODE_IP')
+NAME_NODE_PORT = os.getenv('NAME_NODE_PORT')
+USER = "hadoop"
+NAMENODE_HOST_AND_PORT = "http://" + NAME_NODE + \
+                ":" + NAME_NODE_PORT
 
-# Configura l'oggetto InsecureClient con il nameservice
-hdfs_client = InsecureClient(
-    url=f"http://{hdfs_nameservice}:{hdfs_port}",
-    user="root"
-)
+testFolder = "/testFolder"
 
-# Chiama la funzione per creare la directory
-create_hdfs_directory(hdfs_client, hdfs_directory_path)
+try:
+    client = InsecureClient(NAMENODE_HOST_AND_PORT, user = USER)
+    client.makedirs(testFolder)
+    tmp = "HDFS_test_folder"
+    client.makedirs(os.path.join(testFolder, str(tmp)))
+    client.status(os.path.join(testFolder, str(tmp)))
+    print(f"Successfully created {testFolder}!")
+
+    directories = client.list(testFolder)
+    print("Listing folders... ")
+    for directory in directories:
+        print(directory)
+except Exception as e:
+    print(f"An error occurred: {e}")
+
