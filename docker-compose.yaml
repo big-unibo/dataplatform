@@ -2,17 +2,17 @@ version: "3"
 
 services:
   namenode:
-    image: apache/hadoop:3
+    image: apache/hadoop:${HADOOPVERSION}
     container_name: namenode
     restart: always
     ports:
-      - 9870:9870
-      - 9000:9000
+      - ${NAMENODEPORT}:${NAMENODEPORT}
+      - ${NAMENODERPCPORT}:${NAMENODERPCPORT}
     volumes:
-      - hadoop_namenode:/hadoop/dfs/name
+      - hadoop_namenode:${NAMEDIR}
     env_file:
-      - ./.env
       - ./hadoop.conf
+      - ./.env
     command:
       - /bin/bash
       - -c
@@ -24,47 +24,43 @@ services:
           exit 2
         fi
 
-        if [ -z "$CLUSTER_NAME" ]; then
+        if [ -z "$CLUSTERNAME" ]; then
           echo "Cluster name not specified"
-          export CLUSTER_NAME=test
-          echo $CLUSTER_NAME cluster_name
+          export CLUSTERNAME=test
+          echo $CLUSTERNAME CLUSTERNAME
         fi
 
         if [ "`ls -A $NAMEDIR`" == "" ]; then
           echo "Formatting namenode name directory: $NAMEDIR"
-          /opt/hadoop/bin/hdfs --config $HADOOP_CONF_DIR namenode -format $CLUSTER_NAME
+          /opt/hadoop/bin/hdfs --config $HADOOPCONFDIR namenode -format $CLUSTERNAME
         else
           echo "$NAMEDIR exists!"
         fi
-        hdfs --config $HADOOP_CONF_DIR namenode
+        hdfs --config $HADOOPCONFDIR namenode
 
   datanode:
-    image: apache/hadoop:3
+    image: apache/hadoop:${HADOOPVERSION}
     container_name: datanode
     restart: always
     volumes:
-      - hadoop_datanode:/hadoop/dfs/data
-    environment:
-      SERVICE_PRECONDITION: "namenode:9870"
+      - hadoop_datanode:${DATADIR}
     env_file:
-      - ./.env
       - ./hadoop.conf
+      - ./.env
     command:
       - /bin/bash
       - -c
       - |
-        echo $DATADIR
-        mkdir -p /hadoop/dfs/data
-        sudo chown hadoop /hadoop/dfs/data
-        ls -ld $DATADIR
+        mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
         if [ ! -d $DATADIR ]; then
           echo "Datanode data directory not found: $DATADIR"
           exit 2
         fi
-        hdfs --config $HADOOP_CONF_DIR datanode
+        hdfs --config $HADOOPCONFDIR datanode
   
   resourcemanager:
-    image: apache/hadoop:3
+    image: apache/hadoop:${HADOOPVERSION}
     container_name: resourcemanager
     restart: always
     env_file:
@@ -76,10 +72,10 @@ services:
       - /bin/bash
       - -c
       - |
-        /opt/hadoop/bin/yarn --config $HADOOP_CONF_DIR resourcemanager
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop resourcemanager
 
   nodemanager:
-    image: apache/hadoop:3
+    image: apache/hadoop:${HADOOPVERSION}
     container_name: nodemanager
     restart: always
     env_file:
@@ -89,10 +85,10 @@ services:
       - /bin/bash
       - -c
       - |
-        /opt/hadoop/bin/yarn --config $HADOOP_CONF_DIR nodemanager
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
 
   historyserver:
-    image: apache/hadoop:3
+    image: apache/hadoop:${HADOOPVERSION}
     container_name: historyserver
     restart: always
     volumes:
@@ -101,20 +97,17 @@ services:
       - ./hadoop.conf
       - ./.env
     ports:
-      - 19888:19888
-      - 8030:8030
-      - 8031:8031
-      - 8032:8032
+      - ${YARNHISTSERVERPORT}:${YARNHISTSERVERPORT}
     command:
       - /bin/bash
       - -c
       - |
         mkdir -p /hadoop/yarn/timeline
         sudo chown hadoop /hadoop/yarn/timeline
-        /opt/hadoop/bin/yarn --config $HADOOP_CONF_DIR historyserver
+        /opt/hadoop/bin/yarn --config $HADOOPCONFDIR historyserver
 
   spark-master:
-    image: apache/spark:3.3.3
+    image: apache/spark:${SPARKVERSION}
     container_name: spark-master
     command: 
        - "/opt/spark/sbin/start-master.sh"
@@ -124,29 +117,29 @@ services:
       - ./.env
       - ./hadoop.conf
     volumes:
-      - ./conf_files/spark_conf/:/opt/spark/conf/
+      - ./dataplatform/conf_files/spark_conf/:${SPARKCONFDIR}/
     ports:
-      - ${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT}
+      - ${SPARKMASTERPORT}:${SPARKMASTERPORT}
     depends_on:
       - namenode
 
   spark-worker:
-    image: apache/spark:3.3.3
+    image: apache/spark:${SPARKVERSION}
     container_name: spark-worker
-    command: "/opt/spark/sbin/start-worker.sh spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT}"
+    command: "/opt/spark/sbin/start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}"
     environment:
       - SPARK_NO_DAEMONIZE=true
     env_file:
       - ./.env
       - ./hadoop.conf
     volumes:
-      - ./conf_files/spark_conf/:/opt/spark/conf/
+      - ./dataplatform/conf_files/spark_conf/:${SPARKCONFDIR}/
     restart: always
     depends_on:
       - spark-master
 
   spark-history-server:
-    image: apache/spark:3.3.3
+    image: apache/spark:${SPARKVERSION}
     container_name: spark-history-server
     environment:
       - SPARK_NO_DAEMONIZE=true
@@ -154,20 +147,16 @@ services:
       - ./.env
       - ./hadoop.conf
     volumes:
-      - ./conf_files/spark_conf/:/opt/spark/conf/
-      #- /tmp/spark-events-local:/tmp/spark-events
+      - ./dataplatform/conf_files/spark_conf/:${SPARKCONFDIR}/
     ports:
-      - 18080:18080
+      - ${SPARKHISTSERVERPORT}:${SPARKHISTSERVERPORT}
     restart: always
     command:
       - /bin/bash
       - -c
       - |
-        echo $DATADIR
-        whoami
         mkdir -p tmp/spark-events/
         sudo chown spark tmp/spark-events/
-        ls -ld tmp/spark-events/
         if [ ! -d tmp/spark-events/ ]; then
           echo "Spark logs data directory not found"
           exit 2
@@ -178,7 +167,7 @@ services:
       - namenode
 
   spark-yarn-test-env:
-    image: apache/spark:3.3.3
+    image: apache/spark:${SPARKVERSION}
     container_name: spark-yarn-test-env
     command: "bash"
     #    >
@@ -188,16 +177,16 @@ services:
     #    tail -f /dev/null"
     environment:
       - SPARK_NO_DAEMONIZE=true
-      - HADOOP_CONF_DIR=/opt/spark/conf
+      - HADOOPCONFDIR=/opt/spark/conf
     env_file:
       - ./.env
       - ./hadoop.conf
     volumes:
-      - ./conf_files/spark_conf/:/opt/spark/conf/
-      - ./conf_files/hadoop_conf/core-site.xml:/opt/spark/conf/core-site.xml
-      - ./conf_files/hadoop_conf/hdfs-site.xml:/opt/spark/conf/hdfs-site.xml
-      - ./conf_files/hadoop_conf/yarn-site.xml:/opt/spark/conf/yarn-site.xml
-      - ./tests:/opt/spark/tests
+      - ./dataplatform/conf_files/spark_conf/:${SPARKCONFDIR}/
+      - ./dataplatform/conf_files/hadoop_conf/core-site.xml:${SPARKCONFDIR}/core-site.xml
+      - ./dataplatform/conf_files/hadoop_conf/hdfs-site.xml:${SPARKCONFDIR}/hdfs-site.xml
+      - ./dataplatform/conf_files/hadoop_conf/yarn-site.xml:${SPARKCONFDIR}/yarn-site.xml
+      - ./dataplatform/tests:/opt/spark/tests
     stdin_open: true 
     tty: true 
 

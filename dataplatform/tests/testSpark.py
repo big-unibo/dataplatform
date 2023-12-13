@@ -1,12 +1,9 @@
 import sys
 from operator import add
-import json
 import os
 import sys
 import time
-import uuid
 from dotenv import load_dotenv
-from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark import SparkConf
 
@@ -17,8 +14,8 @@ if os.path.isfile(path1):
 elif os.path.isfile(path2):
     load_dotenv(path2)
 
-os.environ['PYSPARK_PYTHON'] = sys.executable
-os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
+#os.environ['PYSPARK_PYTHON'] = sys.executable
+#os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
 conf = SparkConf()
 spark = SparkSession\
