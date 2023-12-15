@@ -1,0 +1,376 @@
+version: "3.9"
+services:
+  namenode1:
+    image: apache/hadoop:3.3.6
+    
+    ports:
+      - target: 9870
+        published: 9870
+    volumes:
+      - hadoop_namenode1:/hadoop/dfs/name
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /hadoop/dfs/name
+        sudo chown hadoop /hadoop/dfs/name
+        if [ ! -d /hadoop/dfs/name ]; then
+          echo "Namenode name directory not found: /hadoop/dfs/name"
+          exit 2
+        fi
+
+        if [ -z "TEST" ]; then
+          echo "Cluster name not specified"
+          export CLUSTERNAME=test
+        fi
+
+        if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
+          echo "Formatting namenode name directory: /hadoop/dfs/name"
+          /opt/hadoop/bin/hdfs --config /opt/hadoop/etc/hadoop namenode -format TEST
+        else
+          echo "/hadoop/dfs/name exists!"
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop namenode
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    depends_on:
+      - portainer
+
+  namenode2:
+    image: apache/hadoop:3.3.6
+    ports:
+      - target: 9871
+        published: 9871
+    volumes:
+      - hadoop_namenode2:/hadoop/dfs/name
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /hadoop/dfs/name
+        sudo chown hadoop /hadoop/dfs/name
+        if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
+          echo "Bootstrappppppping namenode2"
+          /opt/hadoop/bin/hdfs namenode -bootstrapStandby
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop namenode
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    depends_on:
+      - portainer
+
+  journal1:
+    image: apache/hadoop:3.3.6
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    volumes:
+      - hadoop_journal1:/data/journalnode
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /data/journalnode
+        sudo chown hadoop /data/journalnode
+        hdfs journalnode
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    depends_on:
+      - portainer
+
+  journal2:
+    image: apache/hadoop:3.3.6
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    volumes:
+      - hadoop_journal2:/data/journalnode
+    command:       
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /data/journalnode
+        sudo chown hadoop /data/journalnode
+        hdfs journalnode
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    depends_on:
+      - portainer
+
+  journal3:
+    image: apache/hadoop:3.3.6
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    volumes:
+      - hadoop_journal3:/data/journalnode
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /data/journalnode
+        sudo chown hadoop /data/journalnode
+        hdfs journalnode
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  activator:
+    image: apache/hadoop:3.3.6
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    command:
+      - /bin/bash
+      - -c-/
+      - |
+        sleep 30
+        hdfs haadmin -transitionToActive nn1
+    depends_on:
+      - portainer
+
+  datanode:
+    image: apache/hadoop:3.3.6
+    
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /hadoop/dfs/data
+        sudo chown hadoop /hadoop/dfs/data
+        if [ ! -d /hadoop/dfs/data ]; then
+          echo "Datanode data directory not found: /hadoop/dfs/data"
+          exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+    depends_on:
+      - portainer
+
+  resourcemanager:
+    image: apache/hadoop:3.3.6
+    
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    ports:
+      - target: 8088
+        published: 8088
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop resourcemanager
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    depends_on:
+      - portainer
+
+  nodemanager:
+    image: apache/hadoop:3.3.6
+    
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+    depends_on:
+      - portainer
+
+  historyserver:
+    image: apache/hadoop:3.3.6
+    volumes:
+      - ./hadoop_historyserver:/hadoop/yarn/timeline
+    env_file:
+      - /config/hadoop.conf
+      - /config/.env
+    ports:
+      - target: 19888
+        published: 19888
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /hadoop/yarn/timeline
+        sudo chown hadoop /hadoop/yarn/timeline
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop historyserver
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+    depends_on:
+      - portainer
+
+  spark-master:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    env_file:
+      - /config/.env
+      - /config/hadoop.conf
+    volumes:
+      - /config/spark_conf/:/opt/spark/conf/
+    ports:
+      - target: 7077
+        published: 7077
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/spark/sbin/start-master.sh
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    depends_on:
+      - portainer
+
+  spark-worker:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    env_file:
+      - /config/.env
+      - /config/hadoop.conf
+    volumes:
+      - /config/spark_conf/:/opt/spark/conf/
+    
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/spark/sbin/start-worker.sh spark://spark-master:7077
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+    depends_on:
+      - portainer
+
+  spark-history-server:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    env_file:
+      - /config/.env
+      - /config/hadoop.conf
+    volumes:
+      - /config/spark_conf/:/opt/spark/conf/
+    ports:
+      - target: 18080
+        published: 18080
+    
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p tmp/spark-events/
+        sudo chown spark tmp/spark-events/
+        if [ ! -d tmp/spark-events/ ]; then
+          echo "Spark logs data directory not found"
+          exit 2
+        fi
+        /opt/spark/sbin/start-history-server.sh
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+    depends_on:
+      - portainer
+
+  spark-yarn-test-env:
+    image: apache/spark:latest
+    command: "bash"
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - HADOOPCONFDIR=/opt/spark/conf
+    env_file:
+      - /config/.env
+      - /config/hadoop.conf
+    volumes:
+      - /config/spark_conf/:/opt/spark/conf/
+      - /config/hadoop_conf/core-site.xml:/opt/spark/conf/core-site.xml
+      - /config/hadoop_conf/hdfs-site.xml:/opt/spark/conf/hdfs-site.xml
+      - /config/hadoop_conf/yarn-site.xml:/opt/spark/conf/yarn-site.xml
+      - /test_files:/opt/spark/tests
+    stdin_open: true 
+    tty: true
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker  
+    depends_on:
+      - portainer
+
+  portainer:
+    init: true
+    image: portainer/portainer-ce:latest
+    ports:
+      - target: 9444
+        published: 9444
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./portainer_data:/data
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager  
+
+volumes:
+  hadoop_namenode1:
+  hadoop_namenode2:
+  hadoop_datanode:
+  hadoop_journal1:
+  hadoop_journal2:
+  hadoop_journal3:
+  hadoop_historyserver:
+
+  config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./dataplatform/conf_files/
+
+  test_files:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./dataplatform/tests/
+  
