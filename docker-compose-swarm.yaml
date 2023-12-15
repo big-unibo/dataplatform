@@ -1,12 +1,11 @@
 version: "3.9"
-
 services:
   namenode1:
     image: apache/hadoop:${HADOOPVERSION}
-    container_name: namenode1
     restart: always
     ports:
-      - ${NAMENODEPORT}:${NAMENODEPORT}
+      - target: ${NAMENODEPORT}
+        published: ${NAMENODEPORT}
     volumes:
       - hadoop_namenode1:${NAMEDIR}
     env_file:
@@ -35,17 +34,17 @@ services:
           echo "$NAMEDIR exists!"
         fi
         hdfs --config $HADOOPCONFDIR namenode
-    depends_on:
-      - journal1
-      - journal2
-      - journal3
-    
+    deploy:
+      placement:
+        constraints:
+          - node.role == master
+
   namenode2:
     image: apache/hadoop:${HADOOPVERSION}
-    container_name: namenode2
     restart: always
     ports:
-      - ${NAMENODE2PORT}:9871
+      - target: ${NAMENODE2PORT}
+        published: ${NAMENODE2PORT}
     volumes:
       - hadoop_namenode2:${NAMEDIR}
     env_file:
@@ -62,12 +61,13 @@ services:
           /opt/hadoop/bin/hdfs namenode -bootstrapStandby
         fi
         hdfs --config $HADOOPCONFDIR namenode
-    depends_on:
-      - namenode1
+    deploy:
+      placement:
+        constraints:
+          - node.role == master
 
   journal1:
     image: apache/hadoop:${HADOOPVERSION}
-    hostname: journal1
     env_file:
       - ./hadoop.conf
       - ./.env
@@ -80,10 +80,13 @@ services:
         mkdir -p $JOURNALDIR
         sudo chown hadoop $JOURNALDIR
         hdfs journalnode
+    deploy:
+      placement:
+        constraints:
+          - node.role == master
 
   journal2:
     image: apache/hadoop:${HADOOPVERSION}
-    hostname: journal2
     env_file:
       - ./hadoop.conf
       - ./.env
@@ -96,10 +99,13 @@ services:
         mkdir -p $JOURNALDIR
         sudo chown hadoop $JOURNALDIR
         hdfs journalnode
+    deploy:
+      placement:
+        constraints:
+          - node.role == master
 
   journal3:
     image: apache/hadoop:${HADOOPVERSION}
-    hostname: journal3
     env_file:
       - ./hadoop.conf
       - ./.env
@@ -112,6 +118,10 @@ services:
         mkdir -p $JOURNALDIR
         sudo chown hadoop $JOURNALDIR
         hdfs journalnode
+    deploy:
+      placement:
+        constraints:
+          - node.role == master
 
   activator:
     image: apache/hadoop:${HADOOPVERSION}
@@ -122,12 +132,12 @@ services:
       - /bin/bash
       - -c
       - |
+        sleep 30
         hdfs haadmin -transitionToActive nn1
     restart: on-failure
 
   datanode:
     image: apache/hadoop:${HADOOPVERSION}
-    container_name: datanode
     restart: always
     volumes:
       - hadoop_datanode:${DATADIR}
@@ -145,25 +155,33 @@ services:
           exit 2
         fi
         hdfs --config $HADOOPCONFDIR datanode
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
 
   resourcemanager:
     image: apache/hadoop:${HADOOPVERSION}
-    container_name: resourcemanager
     restart: always
     env_file:
       - ./hadoop.conf
       - ./.env
     ports:
-      - 8088:8088
+      - target: ${RESOURCEMANAGERPORT}
+        published: ${RESOURCEMANAGERPORT}
     command: 
       - /bin/bash
       - -c
       - |
         /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop resourcemanager
+    deploy:
+      placement:
+        constraints:
+          - node.role == master
 
   nodemanager:
     image: apache/hadoop:${HADOOPVERSION}
-    container_name: nodemanager
     restart: always
     env_file:
       - ./hadoop.conf
@@ -173,10 +191,14 @@ services:
       - -c
       - |
         /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
 
   historyserver:
     image: apache/hadoop:${HADOOPVERSION}
-    container_name: historyserver
     restart: always
     volumes:
       - hadoop_historyserver:/hadoop/yarn/timeline
@@ -184,7 +206,8 @@ services:
       - ./hadoop.conf
       - ./.env
     ports:
-      - ${YARNHISTSERVERPORT}:${YARNHISTSERVERPORT}
+      - target: ${YARNHISTSERVERPORT}
+        published: :${YARNHISTSERVERPORT}
     command:
       - /bin/bash
       - -c
@@ -192,6 +215,10 @@ services:
         mkdir -p /hadoop/yarn/timeline
         sudo chown hadoop /hadoop/yarn/timeline
         /opt/hadoop/bin/yarn --config $HADOOPCONFDIR historyserver
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
 
   spark-master:
     image: apache/spark:${SPARKVERSION}
@@ -204,20 +231,20 @@ services:
     volumes:
       - ./dataplatform/conf_files/spark_conf/:${SPARKCONFDIR}/
     ports:
-      - ${SPARKMASTERPORT}:${SPARKMASTERPORT}
-    depends_on:
-      - namenode1
-      - namenode2
+      - target: ${SPARKMASTERPORT}
+        published: ${SPARKMASTERPORT}
     command:
       - /bin/bash
       - -c
       - |
         /opt/spark/sbin/start-master.sh
-
+    deploy:
+      placement:
+        constraints:
+          - node.role == master
 
   spark-worker:
     image: apache/spark:${SPARKVERSION}
-    container_name: spark-worker
     environment:
       - SPARK_NO_DAEMONIZE=true
     env_file:
@@ -226,17 +253,19 @@ services:
     volumes:
       - ./dataplatform/conf_files/spark_conf/:${SPARKCONFDIR}/
     restart: always
-    depends_on:
-      - spark-master
     command:
       - /bin/bash
       - -c
       - |
         /opt/spark/sbin/start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
 
   spark-history-server:
     image: apache/spark:${SPARKVERSION}
-    container_name: spark-history-server
     environment:
       - SPARK_NO_DAEMONIZE=true
     env_file:
@@ -245,7 +274,8 @@ services:
     volumes:
       - ./dataplatform/conf_files/spark_conf/:${SPARKCONFDIR}/
     ports:
-      - ${SPARKHISTSERVERPORT}:${SPARKHISTSERVERPORT}
+      - target: ${SPARKHISTSERVERPORT}
+        published: ${SPARKHISTSERVERPORT}
     restart: always
     command:
       - /bin/bash
@@ -258,14 +288,13 @@ services:
           exit 2
         fi
         /opt/spark/sbin/start-history-server.sh
-    depends_on:
-      - spark-master
-      - namenode1
-      - namenode2
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
 
   spark-yarn-test-env:
     image: apache/spark:${SPARKVERSION}
-    container_name: spark-yarn-test-env
     command: "bash"
     environment:
       - SPARK_NO_DAEMONIZE=true
@@ -280,7 +309,21 @@ services:
       - ./dataplatform/conf_files/hadoop_conf/yarn-site.xml:${SPARKCONFDIR}/yarn-site.xml
       - ./dataplatform/tests:/opt/spark/tests
     stdin_open: true 
-    tty: true  
+    tty: true
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker  
+  portainer:
+    init: true
+    image: portainer/portainer-ce:latest
+    ports:
+      - target: 9443
+        published: 9443
+    volumes:
+        - ./mounts/portainer:/data
+        - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
 
 volumes:
   hadoop_namenode1:
