@@ -3,7 +3,8 @@ set -o allexport
 source .env
 set +o allexport
 
-envsubst < docker-compose-swarm.yaml > docker-compose-subs.yaml
+cp -f .env ./dataplatform/conf_files/
+envsubst < docker-compose.yaml > docker-compose-subs.yaml
 
 #envsubst < docker-compose-swarm.yaml > docker-compose-sub.yaml
-docker stack deploy -c docker-compose-sub.yaml testStack
+docker stack deploy -c docker-compose-subs.yaml myTestStack

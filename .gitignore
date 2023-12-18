@@ -2,6 +2,8 @@
 /dataplatform/tests/HDFD_VENV_3.7
 .idea/
 .vscode
+portainer_data
+hadoop_historyserver
 
 # Created by https://www.gitignore.io/api/java,linux,macos,gradle,windows,eclipse,intellij
 # Edit at https://www.gitignore.io/?templates=java,linux,macos,gradle,windows,eclipse,intellij
