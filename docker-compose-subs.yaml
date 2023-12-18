@@ -2,19 +2,20 @@ version: "3.9"
 services:
   namenode1:
     image: apache/hadoop:3.3.6
-    
     ports:
       - target: 9870
         published: 9870
     volumes:
       - hadoop_namenode1:/hadoop/dfs/name
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
       - |
+        sleep 20
         mkdir -p /hadoop/dfs/name
         sudo chown hadoop /hadoop/dfs/name
         if [ ! -d /hadoop/dfs/name ]; then
@@ -38,9 +39,7 @@ services:
       placement:
         constraints:
           - node.role == manager
-    depends_on:
-      - portainer
-
+    
   namenode2:
     image: apache/hadoop:3.3.6
     ports:
@@ -48,13 +47,15 @@ services:
         published: 9871
     volumes:
       - hadoop_namenode2:/hadoop/dfs/name
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
       - |
+        sleep 25
         mkdir -p /hadoop/dfs/name
         sudo chown hadoop /hadoop/dfs/name
         if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
@@ -66,16 +67,15 @@ services:
       placement:
         constraints:
           - node.role == manager
-    depends_on:
-      - portainer
 
   journal1:
     image: apache/hadoop:3.3.6
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     volumes:
       - hadoop_journal1:/data/journalnode
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command: 
       - /bin/bash
       - -c
@@ -87,16 +87,15 @@ services:
       placement:
         constraints:
           - node.role == manager
-    depends_on:
-      - portainer
 
   journal2:
     image: apache/hadoop:3.3.6
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     volumes:
       - hadoop_journal2:/data/journalnode
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command:       
       - /bin/bash
       - -c
@@ -108,16 +107,15 @@ services:
       placement:
         constraints:
           - node.role == manager
-    depends_on:
-      - portainer
 
   journal3:
     image: apache/hadoop:3.3.6
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     volumes:
       - hadoop_journal3:/data/journalnode
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command:
       - /bin/bash
       - -c
@@ -132,30 +130,31 @@ services:
 
   activator:
     image: apache/hadoop:3.3.6
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+    volumes:
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c-/
       - |
         sleep 30
         hdfs haadmin -transitionToActive nn1
-    depends_on:
-      - portainer
 
   datanode:
     image: apache/hadoop:3.3.6
-    
     volumes:
       - hadoop_datanode:/hadoop/dfs/data
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
       - |
+        sleep 25
         mkdir -p /hadoop/dfs/data
         sudo chown hadoop /hadoop/dfs/data
         if [ ! -d /hadoop/dfs/data ]; then
@@ -164,22 +163,21 @@ services:
         fi
         hdfs --config /opt/hadoop/etc/hadoop datanode
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.role == worker
-    depends_on:
-      - portainer
 
   resourcemanager:
     image: apache/hadoop:3.3.6
-    
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     ports:
       - target: 8088
         published: 8088
+    volumes:
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command: 
       - /bin/bash
       - -c
@@ -189,35 +187,33 @@ services:
       placement:
         constraints:
           - node.role == manager
-    depends_on:
-      - portainer
 
   nodemanager:
     image: apache/hadoop:3.3.6
-    
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
+    volumes:
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command:
       - /bin/bash
       - -c
       - |
         /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.role == worker
-    depends_on:
-      - portainer
 
   historyserver:
     image: apache/hadoop:3.3.6
     volumes:
       - ./hadoop_historyserver:/hadoop/yarn/timeline
-    env_file:
-      - /config/hadoop.conf
-      - /config/.env
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     ports:
       - target: 19888
         published: 19888
@@ -232,18 +228,17 @@ services:
       placement:
         constraints:
           - node.role == worker
-    depends_on:
-      - portainer
 
   spark-master:
     image: apache/spark:latest
     environment:
       - SPARK_NO_DAEMONIZE=true
-    env_file:
-      - /config/.env
-      - /config/hadoop.conf
+    #env_file:
+      #- ./dataplatform/conf_files/.env
+      #- ./dataplatform/conf_files/hadoop.conf
     volumes:
-      - /config/spark_conf/:/opt/spark/conf/
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     ports:
       - target: 7077
         published: 7077
@@ -251,50 +246,48 @@ services:
       - /bin/bash
       - -c
       - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
         /opt/spark/sbin/start-master.sh
     deploy:
       placement:
         constraints:
           - node.role == manager
-    depends_on:
-      - portainer
 
   spark-worker:
     image: apache/spark:latest
     environment:
       - SPARK_NO_DAEMONIZE=true
-    env_file:
-      - /config/.env
-      - /config/hadoop.conf
+    #env_file:
+      #- ./dataplatform/conf_files/.env
+      #- ./dataplatform/conf_files/hadoop.conf
     volumes:
-      - /config/spark_conf/:/opt/spark/conf/
-    
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command:
       - /bin/bash
       - -c
       - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
         /opt/spark/sbin/start-worker.sh spark://spark-master:7077
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.role == worker
-    depends_on:
-      - portainer
 
   spark-history-server:
     image: apache/spark:latest
     environment:
       - SPARK_NO_DAEMONIZE=true
-    env_file:
-      - /config/.env
-      - /config/hadoop.conf
+    #env_file:
+      #- ./dataplatform/conf_files/.env
+      #- ./dataplatform/conf_files/hadoop.conf
     volumes:
-      - /config/spark_conf/:/opt/spark/conf/
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     ports:
       - target: 18080
         published: 18080
-    
     command:
       - /bin/bash
       - -c
@@ -305,37 +298,38 @@ services:
           echo "Spark logs data directory not found"
           exit 2
         fi
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
         /opt/spark/sbin/start-history-server.sh
     deploy:
       placement:
         constraints:
           - node.role == worker
-    depends_on:
-      - portainer
 
   spark-yarn-test-env:
     image: apache/spark:latest
-    command: "bash"
+    #command: "bash"
     environment:
       - SPARK_NO_DAEMONIZE=true
-      - HADOOPCONFDIR=/opt/spark/conf
-    env_file:
-      - /config/.env
-      - /config/hadoop.conf
+      - HADOOP_CONF_DIR=/opt/spark/conf/
+    #env_file:
+      #- ./dataplatform/conf_files/.env
+      #- ./dataplatform/conf_files/hadoop.conf
     volumes:
-      - /config/spark_conf/:/opt/spark/conf/
-      - /config/hadoop_conf/core-site.xml:/opt/spark/conf/core-site.xml
-      - /config/hadoop_conf/hdfs-site.xml:/opt/spark/conf/hdfs-site.xml
-      - /config/hadoop_conf/yarn-site.xml:/opt/spark/conf/yarn-site.xml
-      - /test_files:/opt/spark/tests
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+      - test_files:/opt/spark/tests
     stdin_open: true 
     tty: true
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
     deploy:
       placement:
         constraints:
-          - node.role == worker  
-    depends_on:
-      - portainer
+          - node.role == worker
+
 
   portainer:
     init: true
@@ -351,6 +345,7 @@ services:
         constraints:
           - node.role == manager  
 
+
 volumes:
   hadoop_namenode1:
   hadoop_namenode2:
@@ -360,12 +355,19 @@ volumes:
   hadoop_journal3:
   hadoop_historyserver:
 
-  config:
+  spark_config:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ./dataplatform/conf_files/
+      device: /home/mpasini/dataplatform/dataplatform/conf_files/spark_conf/
+        
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mpasini/dataplatform/dataplatform/conf_files/hadoop_conf/
 
   test_files:
     driver: local
