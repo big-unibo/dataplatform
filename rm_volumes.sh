@@ -1,5 +1,5 @@
 #!/bin/bash
-DOCKER_COMPOSE_FILE="docker-compose.yaml"
+DOCKER_COMPOSE_FILE="docker-compose-subs.yaml"
 
 VOLUME_NAMES=$(python3 -c "import yaml; f = open('$DOCKER_COMPOSE_FILE'); data = yaml.safe_load(f); f.close(); volumes = data.get('volumes', {}); print('\n'.join(volumes.keys()))")
 

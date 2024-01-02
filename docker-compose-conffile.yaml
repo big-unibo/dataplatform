@@ -1,13 +1,13 @@
 version: "3.9"
 services:
   namenode1:
-    image: apache/hadoop:3.3.6
+    image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - 9870:9870
+      - ${NAMENODEPORT}:${NAMENODEPORT}
       - 8020:8020
     volumes:
-       - hadoop_namenode1:/hadoop/dfs/name
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
+       - hadoop_namenode1:${NAMEDIR}
+      #- hadoop_config:${HADOOPCONFDIR}
     env_file:
       - ./dataplatform/conf_files/hadoop.conf
       - ./dataplatform/conf_files/.env
@@ -18,25 +18,25 @@ services:
       - -c
       - |
         sleep 40
-        echo sudo mkdir -p /hadoop/dfs/name
-        sudo mkdir -p /hadoop/dfs/name
-        echo sudo chown hadoop /hadoop/dfs/name
-        sudo chown hadoop /hadoop/dfs/name
-        if [ ! -d /hadoop/dfs/name ]; then
-          echo "Namenode name directory not found: /hadoop/dfs/name"
+        echo sudo mkdir -p ${NAMEDIR}
+        sudo mkdir -p ${NAMEDIR}
+        echo sudo chown hadoop ${NAMEDIR}
+        sudo chown hadoop ${NAMEDIR}
+        if [ ! -d ${NAMEDIR} ]; then
+          echo "Namenode name directory not found: ${NAMEDIR}"
           exit 2
         fi
 
-        if [ -z "TEST" ]; then
+        if [ -z "${CLUSTERNAME}" ]; then
           echo "Cluster name not specified"
           export CLUSTERNAME=test
         fi
 
-        if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
-          echo "Formatting namenode name directory: /hadoop/dfs/name"
-          /opt/hadoop/bin/hdfs --config /opt/hadoop/etc/hadoop namenode -format TEST
+        if [ "`ls -A ${NAMEDIR}`" == "" ]; then
+          echo "Formatting namenode name directory: ${NAMEDIR}"
+          /opt/hadoop/bin/hdfs --config /opt/hadoop/etc/hadoop namenode -format ${CLUSTERNAME}
         else
-          echo "/hadoop/dfs/name exists!"
+          echo "${NAMEDIR} exists!"
         fi
         hdfs --config /opt/hadoop/etc/hadoop namenode
     deploy:
@@ -47,12 +47,12 @@ services:
     #  - hadoop-network 
     
   namenode2:
-    image: apache/hadoop:3.3.6
+    image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - 9871:9871
+      - ${NAMENODE2PORT}:${NAMENODE2PORT}
     volumes:
-      - hadoop_namenode2:/hadoop/dfs/name
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
+      - hadoop_namenode2:${NAMEDIR}
+      #- hadoop_config:${HADOOPCONFDIR}
     env_file:
       - ./dataplatform/conf_files/hadoop.conf
       - ./dataplatform/conf_files/.env
@@ -63,9 +63,9 @@ services:
       - -c
       - |
         sleep 40000000
-        mkdir -p /hadoop/dfs/name
-        sudo chown hadoop /hadoop/dfs/name
-        if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
+        mkdir -p ${NAMEDIR}
+        sudo chown hadoop ${NAMEDIR}
+        if [ "`ls -A ${NAMEDIR}`" == "" ]; then
           echo "Bootstrappppppping namenode2"
           /opt/hadoop/bin/hdfs namenode -bootstrapStandby
         fi
@@ -78,19 +78,19 @@ services:
     #  - hadoop-network 
 
   journal1:
-    image: apache/hadoop:3.3.6
+    image: apache/hadoop:${HADOOPVERSION}
     env_file:
       - ./dataplatform/conf_files/hadoop.conf
       - ./dataplatform/conf_files/.env
     volumes:
-      - hadoop_journal1:/data/journalnode
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
+      - hadoop_journal1:${JOURNALDIR}
+      #- hadoop_config:${HADOOPCONFDIR}
     command: 
       - /bin/bash
       - -c
       - |
-        mkdir -p /data/journalnode
-        sudo chown hadoop /data/journalnode
+        mkdir -p ${JOURNALDIR}
+        sudo chown hadoop ${JOURNALDIR}
         hdfs journalnode
     deploy:
       placement:
@@ -100,19 +100,19 @@ services:
       - hadoop-network 
 
   journal2:
-    image: apache/hadoop:3.3.6
+    image: apache/hadoop:${HADOOPVERSION}
     env_file:
       - ./dataplatform/conf_files/hadoop.conf
       - ./dataplatform/conf_files/.env
     volumes:
-      - hadoop_journal2:/data/journalnode
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
+      - hadoop_journal2:${JOURNALDIR}
+      #- hadoop_config:${HADOOPCONFDIR}
     command:       
       - /bin/bash
       - -c
       - |
-        mkdir -p /data/journalnode
-        sudo chown hadoop /data/journalnode
+        mkdir -p ${JOURNALDIR}
+        sudo chown hadoop ${JOURNALDIR}
         hdfs journalnode
     deploy:
       placement:
@@ -122,19 +122,19 @@ services:
     #  - hadoop-network 
 
   journal3:
-    image: apache/hadoop:3.3.6
+    image: apache/hadoop:${HADOOPVERSION}
     env_file:
       - ./dataplatform/conf_files/hadoop.conf
       - ./dataplatform/conf_files/.env
     volumes:
-      - hadoop_journal3:/data/journalnode
-    #  - hadoop_config:/opt/hadoop/etc/hadoop/
+      - hadoop_journal3:${JOURNALDIR}
+    #  - hadoop_config:${HADOOPCONFDIR}
     command:
       - /bin/bash
       - -c
       - |
-        mkdir -p /data/journalnode
-        sudo chown hadoop /data/journalnode
+        mkdir -p ${JOURNALDIR}
+        sudo chown hadoop ${JOURNALDIR}
         hdfs journalnode
     deploy:
       placement:
