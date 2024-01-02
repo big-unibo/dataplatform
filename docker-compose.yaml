@@ -15,7 +15,7 @@ services:
       - /bin/bash
       - -c
       - |
-        sleep 20
+        sleep 10
         mkdir -p ${NAMEDIR}
         sudo chown hadoop ${NAMEDIR}
         if [ ! -d ${NAMEDIR} ]; then
@@ -55,7 +55,7 @@ services:
       - /bin/bash
       - -c
       - |
-        sleep 25
+        sleep 10
         mkdir -p ${NAMEDIR}
         sudo chown hadoop ${NAMEDIR}
         if [ "`ls -A ${NAMEDIR}`" == "" ]; then
@@ -137,9 +137,9 @@ services:
       #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
-      - -c-/
+      - -c
       - |
-        sleep 30
+        sleep 20
         hdfs haadmin -transitionToActive nn1
 
   datanode:
@@ -154,7 +154,7 @@ services:
       - /bin/bash
       - -c
       - |
-        sleep 25
+        sleep 15
         mkdir -p ${DATADIR}
         sudo chown hadoop ${DATADIR}
         if [ ! -d ${DATADIR} ]; then
@@ -168,183 +168,182 @@ services:
         constraints:
           - node.role == worker
 
-  resourcemanager:
-    image: apache/hadoop:${HADOOPVERSION}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
-    ports:
-      - target: ${RESOURCEMANAGERPORT}
-        published: ${RESOURCEMANAGERPORT}
-    volumes:
-      - hadoop_config:${HADOOPCONFDIR}
-    command: 
-      - /bin/bash
-      - -c
-      - |
-        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop resourcemanager
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
+#   resourcemanager:
+#     image: apache/hadoop:${HADOOPVERSION}
+#     #env_file:
+#       #- ./dataplatform/conf_files/hadoop.conf
+#       #- ./dataplatform/conf_files/.env
+#     ports:
+#       - target: ${RESOURCEMANAGERPORT}
+#         published: ${RESOURCEMANAGERPORT}
+#     volumes:
+#       - hadoop_config:${HADOOPCONFDIR}
+#     command: 
+#       - /bin/bash
+#       - -c
+#       - |
+#         /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop resourcemanager
+#     deploy:
+#       placement:
+#         constraints:
+#           - node.role == manager
 
-  nodemanager:
-    image: apache/hadoop:${HADOOPVERSION}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
-    volumes:
-      - hadoop_config:${HADOOPCONFDIR}
-    command:
-      - /bin/bash
-      - -c
-      - |
-        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == worker
+#   nodemanager:
+#     image: apache/hadoop:${HADOOPVERSION}
+#     #env_file:
+#       #- ./dataplatform/conf_files/hadoop.conf
+#       #- ./dataplatform/conf_files/.env
+#     volumes:
+#       - hadoop_config:${HADOOPCONFDIR}
+#     command:
+#       - /bin/bash
+#       - -c
+#       - |
+#         /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
+#     deploy:
+#       replicas: 1
+#       placement:
+#         constraints:
+#           - node.role == worker
 
-  historyserver:
-    image: apache/hadoop:${HADOOPVERSION}
-    volumes:
-      - ./hadoop_historyserver:/hadoop/yarn/timeline
-      - hadoop_config:${HADOOPCONFDIR}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
-    ports:
-      - target: ${YARNHISTSERVERPORT}
-        published: ${YARNHISTSERVERPORT}
-    command:
-      - /bin/bash
-      - -c
-      - |
-        mkdir -p /hadoop/yarn/timeline
-        sudo chown hadoop /hadoop/yarn/timeline
-        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop historyserver
-    deploy:
-      placement:
-        constraints:
-          - node.role == worker
+#   historyserver:
+#     image: apache/hadoop:${HADOOPVERSION}
+#     volumes:
+#       #- ./hadoop_historyserver:/hadoop/yarn/timeline
+#       - hadoop_config:${HADOOPCONFDIR}
+#     #env_file:
+#       #- ./dataplatform/conf_files/hadoop.conf
+#       #- ./dataplatform/conf_files/.env
+#     ports:
+#       - target: ${YARNHISTSERVERPORT}
+#         published: ${YARNHISTSERVERPORT}
+#     command:
+#       - /bin/bash
+#       - -c
+#       - |
+#         mkdir -p /hadoop/yarn/timeline
+#         sudo chown hadoop /hadoop/yarn/timeline
+#         /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop historyserver
+#     deploy:
+#       placement:
+#         constraints:
+#           - node.role == worker
 
-  spark-master:
-    image: apache/spark:${SPARKVERSION}
-    environment:
-      - SPARK_NO_DAEMONIZE=true
-    #env_file:
-      #- ./dataplatform/conf_files/.env
-      #- ./dataplatform/conf_files/hadoop.conf
-    volumes:
-      - spark_config:${SPARKCONFDIR}
-      - hadoop_config:${HADOOPCONFDIR}
-    ports:
-      - target: ${SPARKMASTERPORT}
-        published: ${SPARKMASTERPORT}
-    command:
-      - /bin/bash
-      - -c
-      - |
-        cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
-        /opt/spark/sbin/start-master.sh
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
+#   spark-master:
+#     image: apache/spark:${SPARKVERSION}
+#     environment:
+#       - SPARK_NO_DAEMONIZE=true
+#     #env_file:
+#       #- ./dataplatform/conf_files/.env
+#       #- ./dataplatform/conf_files/hadoop.conf
+#     volumes:
+#       - spark_config:${SPARKCONFDIR}
+#       - hadoop_config:${HADOOPCONFDIR}
+#     ports:
+#       - target: ${SPARKMASTERPORT}
+#         published: ${SPARKMASTERPORT}
+#     command:
+#       - /bin/bash
+#       - -c
+#       - |
+#         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+#         /opt/spark/sbin/start-master.sh
+#     deploy:
+#       placement:
+#         constraints:
+#           - node.role == manager
 
-  spark-worker:
-    image: apache/spark:${SPARKVERSION}
-    environment:
-      - SPARK_NO_DAEMONIZE=true
-    #env_file:
-      #- ./dataplatform/conf_files/.env
-      #- ./dataplatform/conf_files/hadoop.conf
-    volumes:
-      - spark_config:${SPARKCONFDIR}
-      - hadoop_config:${HADOOPCONFDIR}
-    command:
-      - /bin/bash
-      - -c
-      - |
-        cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
-        /opt/spark/sbin/start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == worker
+#   spark-worker:
+#     image: apache/spark:${SPARKVERSION}
+#     environment:
+#       - SPARK_NO_DAEMONIZE=true
+#     #env_file:
+#       #- ./dataplatform/conf_files/.env
+#       #- ./dataplatform/conf_files/hadoop.conf
+#     volumes:
+#       - spark_config:${SPARKCONFDIR}
+#       - hadoop_config:${HADOOPCONFDIR}
+#     command:
+#       - /bin/bash
+#       - -c
+#       - |
+#         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+#         /opt/spark/sbin/start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}
+#     deploy:
+#       replicas: 1
+#       placement:
+#         constraints:
+#           - node.role == worker
 
-  spark-history-server:
-    image: apache/spark:${SPARKVERSION}
-    environment:
-      - SPARK_NO_DAEMONIZE=true
-    #env_file:
-      #- ./dataplatform/conf_files/.env
-      #- ./dataplatform/conf_files/hadoop.conf
-    volumes:
-      - spark_config:${SPARKCONFDIR}
-      - hadoop_config:${HADOOPCONFDIR}
-    ports:
-      - target: ${SPARKHISTSERVERPORT}
-        published: ${SPARKHISTSERVERPORT}
-    command:
-      - /bin/bash
-      - -c
-      - |
-        mkdir -p tmp/spark-events/
-        sudo chown spark tmp/spark-events/
-        if [ ! -d tmp/spark-events/ ]; then
-          echo "Spark logs data directory not found"
-          exit 2
-        fi
-        cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
-        /opt/spark/sbin/start-history-server.sh
-    deploy:
-      placement:
-        constraints:
-          - node.role == worker
+#   spark-history-server:
+#     image: apache/spark:${SPARKVERSION}
+#     environment:
+#       - SPARK_NO_DAEMONIZE=true
+#     #env_file:
+#       #- ./dataplatform/conf_files/.env
+#       #- ./dataplatform/conf_files/hadoop.conf
+#     volumes:
+#       - spark_config:${SPARKCONFDIR}
+#       - hadoop_config:${HADOOPCONFDIR}
+#     ports:
+#       - target: ${SPARKHISTSERVERPORT}
+#         published: ${SPARKHISTSERVERPORT}
+#     command:
+#       - /bin/bash
+#       - -c
+#       - |
+#         mkdir -p tmp/spark-events/
+#         sudo chown spark tmp/spark-events/
+#         if [ ! -d tmp/spark-events/ ]; then
+#           echo "Spark logs data directory not found"
+#           exit 2
+#         fi
+#         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+#         /opt/spark/sbin/start-history-server.sh
+#     deploy:
+#       placement:
+#         constraints:
+#           - node.role == worker
 
-  spark-yarn-test-env:
-    image: apache/spark:${SPARKVERSION}
-    #command: "bash"
-    environment:
-      - SPARK_NO_DAEMONIZE=true
-      - HADOOP_CONF_DIR=${SPARKCONFDIR}
-    #env_file:
-      #- ./dataplatform/conf_files/.env
-      #- ./dataplatform/conf_files/hadoop.conf
-    volumes:
-      - spark_config:${SPARKCONFDIR}
-      - hadoop_config:${HADOOPCONFDIR}
-      - test_files:/opt/spark/tests
-    stdin_open: true 
-    tty: true
-    command:
-      - /bin/bash
-      - -c
-      - |
-        cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
-    deploy:
-      placement:
-        constraints:
-          - node.role == worker
+#   spark-yarn-test-env:
+#     image: apache/spark:${SPARKVERSION}
+#     #command: "bash"
+#     environment:
+#       - SPARK_NO_DAEMONIZE=true
+#       - HADOOP_CONF_DIR=${SPARKCONFDIR}
+#     #env_file:
+#       #- ./dataplatform/conf_files/.env
+#       #- ./dataplatform/conf_files/hadoop.conf
+#     volumes:
+#       - spark_config:${SPARKCONFDIR}
+#       - hadoop_config:${HADOOPCONFDIR}
+#       - test_files:/opt/spark/tests
+#     stdin_open: true 
+#     tty: true
+#     command:
+#       - /bin/bash
+#       - -c
+#       - |
+#         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+#     deploy:
+#       placement:
+#         constraints:
+#           - node.role == worker
 
 
-  portainer:
-    init: true
-    image: portainer/portainer-ce:latest
-    ports:
-      - target: ${PORTAINERPORT}
-        published: ${PORTAINERPORT}
-    volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - ./portainer_data:/data
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager  
-
+#   portainer:
+#     init: true
+#     image: portainer/portainer-ce:latest
+#     ports:
+#       - target: ${PORTAINERPORT}
+#         published: ${PORTAINERPORT}
+#     volumes:
+#         - /var/run/docker.sock:/var/run/docker.sock
+#         - ./portainer_data:/data
+#     deploy:
+#       placement:
+#         constraints:
+#           - node.role == manager  
 
 volumes:
   hadoop_namenode1:
@@ -353,26 +352,23 @@ volumes:
   hadoop_journal1:
   hadoop_journal2:
   hadoop_journal3:
-  hadoop_historyserver:
+#  hadoop_historyserver:
 
   spark_config:
-    driver: local
     driver_opts:
-      type: none
-      o: bind
-      device: /home/mpasini/dataplatform/dataplatform/conf_files/spark_conf/
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/spark_conf/
         
   hadoop_config:
-    driver: local
     driver_opts:
-      type: none
-      o: bind
-      device: /home/mpasini/dataplatform/dataplatform/conf_files/hadoop_conf/
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/hadoop_conf/
 
   test_files:
-    driver: local
     driver_opts:
-      type: none
-      o: bind
-      device: ./dataplatform/tests/
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/tests/
   

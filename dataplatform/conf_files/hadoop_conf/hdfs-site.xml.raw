@@ -1,16 +1,24 @@
-dfs.namenode.name.dir: file:///hadoop/dfs/name
+
 dfs.replication: 3
 dfs.nameservices: myhacluster
 dfs.namenode.datanode.registration.ip-hostname-check: false
 dfs.namenode.shared.edits.dir: qjournal://journal1:8485;journal2:8485;journal3:8485/myhacluster
-dfs.namenode.http-address.myhacluster.nn2: namenode2:9871
+
+dfs.namenode.name.dir: file:///hadoop/dfs/name
 dfs.datanode.data.dir: file:///hadoop/dfs/data
 dfs.journalnode.edits.dir: /data/journalnode
-dfs.namenode.http-address.myhacluster.nn1: namenode1:9870
+
 dfs.permissions.enabled: false
 dfs.webhdfs.enabled: true
+
 dfs.namenode.rpc-address.myhacluster.nn1: namenode1:9000
 dfs.namenode.rpc-address.myhacluster.nn2: namenode2:9000
+
+dfs.namenode.http-address.myhacluster.nn1: namenode1:9870
+dfs.namenode.http-address.myhacluster.nn2: namenode2:9871
+
+
+
 dfs.client.failover.proxy.provider.myhacluster: org.apache.hadoop.hdfs.server.namenode.ha.RequestHedgingProxyProvider
 dfs.ha.namenodes.myhacluster: nn1,nn2
 dfs.ha.fencing.methods: shell(/bin/true)
