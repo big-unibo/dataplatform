@@ -5,6 +5,12 @@
 portainer_data
 hadoop_historyserver
 
+hadoop_journal1
+hadoop_journal2
+hadoop_journal3
+hadoop_namenode1
+hadoop_namenode2
+hadoop_datanode
 # Created by https://www.gitignore.io/api/java,linux,macos,gradle,windows,eclipse,intellij
 # Edit at https://www.gitignore.io/?templates=java,linux,macos,gradle,windows,eclipse,intellij
 

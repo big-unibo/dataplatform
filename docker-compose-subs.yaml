@@ -4,23 +4,18 @@ services:
     image: apache/hadoop:3.3.6
     ports:
       - 9870:9870
-      - 8020:8020
     volumes:
-       - hadoop_namenode1:/hadoop/dfs/name
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
-    env_file:
-      - ./dataplatform/conf_files/hadoop.conf
-      - ./dataplatform/conf_files/.env
-    environment:
-      - HADOOP_HOME=/opt/hadoop/
+      - hadoop_namenode1:/hadoop/dfs/name
+      - namenode1_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/namenode1.conf
+      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
       - |
-        sleep 40
-        echo sudo mkdir -p /hadoop/dfs/name
-        sudo mkdir -p /hadoop/dfs/name
-        echo sudo chown hadoop /hadoop/dfs/name
+        sleep 20
+        mkdir -p /hadoop/dfs/name
         sudo chown hadoop /hadoop/dfs/name
         if [ ! -d /hadoop/dfs/name ]; then
           echo "Namenode name directory not found: /hadoop/dfs/name"
@@ -43,8 +38,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
+    networks:
+      - hadoop-network 
     
   namenode2:
     image: apache/hadoop:3.3.6
@@ -52,17 +47,15 @@ services:
       - 9871:9871
     volumes:
       - hadoop_namenode2:/hadoop/dfs/name
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
-    env_file:
-      - ./dataplatform/conf_files/hadoop.conf
-      - ./dataplatform/conf_files/.env
-    environment:
-      - HADOOP_HOME=/opt/hadoop/
+      - namenode2_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/namenode2.conf
+      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
       - |
-        sleep 40000000
+        sleep 30
         mkdir -p /hadoop/dfs/name
         sudo chown hadoop /hadoop/dfs/name
         if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
@@ -70,21 +63,22 @@ services:
           /opt/hadoop/bin/hdfs namenode -bootstrapStandby
         fi
         hdfs --config /opt/hadoop/etc/hadoop namenode
+        hdfs haadmin -transitionToActive nn1
     deploy:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
+    networks:
+      - hadoop-network 
 
   journal1:
     image: apache/hadoop:3.3.6
-    env_file:
-      - ./dataplatform/conf_files/hadoop.conf
-      - ./dataplatform/conf_files/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     volumes:
       - hadoop_journal1:/data/journalnode
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command: 
       - /bin/bash
       - -c
@@ -101,12 +95,12 @@ services:
 
   journal2:
     image: apache/hadoop:3.3.6
-    env_file:
-      - ./dataplatform/conf_files/hadoop.conf
-      - ./dataplatform/conf_files/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     volumes:
       - hadoop_journal2:/data/journalnode
-      #- hadoop_config:/opt/hadoop/etc/hadoop/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command:       
       - /bin/bash
       - -c
@@ -118,17 +112,17 @@ services:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
+    networks:
+      - hadoop-network 
 
   journal3:
     image: apache/hadoop:3.3.6
-    env_file:
-      - ./dataplatform/conf_files/hadoop.conf
-      - ./dataplatform/conf_files/.env
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
     volumes:
       - hadoop_journal3:/data/journalnode
-    #  - hadoop_config:/opt/hadoop/etc/hadoop/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
     command:
       - /bin/bash
       - -c
@@ -140,23 +134,246 @@ services:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
+    networks:
+      - hadoop-network 
+
+  # activator:
+  #   image: apache/hadoop:3.3.6
+  #   volumes:
+  #     - hadoop_config:/opt/hadoop/etc/hadoop/
+  #   #env_file:
+  #     #- ./dataplatform/conf_files/hadoop.conf
+  #     #- ./dataplatform/conf_files/.env
+  #   command:
+  #     - /bin/bash
+  #     - -c
+  #     - |
+  #       sleep 20
+  #       hdfs haadmin -transitionToActive nn1
+
+  datanode:
+    image: apache/hadoop:3.3.6
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        mkdir -p /hadoop/dfs/data
+        sudo chown hadoop /hadoop/dfs/data
+        if [ ! -d /hadoop/dfs/data ]; then
+          echo "Datanode data directory not found: /hadoop/dfs/data"
+          exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - hadoop-network 
+
+  resourcemanager:
+    image: apache/hadoop:3.3.6
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
+    ports:
+      - target: 8088
+        published: 8088
+    volumes:
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop resourcemanager
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - hadoop-network 
+
+  nodemanager:
+    image: apache/hadoop:3.3.6
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
+    volumes:
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - hadoop-network 
+
+  historyserver:
+    image: apache/hadoop:3.3.6
+    volumes:
+      - ./hadoop_historyserver:/hadoop/yarn/timeline
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    #env_file:
+      #- ./dataplatform/conf_files/hadoop.conf
+      #- ./dataplatform/conf_files/.env
+    ports:
+      - target: 19888
+        published: 19888
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /hadoop/yarn/timeline
+        sudo chown hadoop /hadoop/yarn/timeline
+        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop historyserver
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - hadoop-network 
+
+  spark-master:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    #env_file:
+      #- ./dataplatform/conf_files/.env
+      #- ./dataplatform/conf_files/hadoop.conf
+    volumes:
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    ports:
+      - target: 7077
+        published: 7077
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+        /opt/spark/sbin/start-master.sh
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - hadoop-network 
+
+  spark-worker:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    #env_file:
+      #- ./dataplatform/conf_files/.env
+      #- ./dataplatform/conf_files/hadoop.conf
+    volumes:
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+        /opt/spark/sbin/start-worker.sh spark://spark-master:7077
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - hadoop-network 
+
+  spark-history-server:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    #env_file:
+      #- ./dataplatform/conf_files/.env
+      #- ./dataplatform/conf_files/hadoop.conf
+    volumes:
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    ports:
+      - target: 18080
+        published: 18080
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p tmp/spark-events/
+        sudo chown spark tmp/spark-events/
+        if [ ! -d tmp/spark-events/ ]; then
+          echo "Spark logs data directory not found"
+          exit 2
+        fi
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+        /opt/spark/sbin/start-history-server.sh
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - hadoop-network 
+
+  # spark-yarn-test-env:
+  #   image: apache/spark:latest
+  #   #command: "bash"
+  #   environment:
+  #     - SPARK_NO_DAEMONIZE=true
+  #     - HADOOP_CONF_DIR=/opt/spark/conf/
+  #   #env_file:
+  #     #- ./dataplatform/conf_files/.env
+  #     #- ./dataplatform/conf_files/hadoop.conf
+  #   volumes:
+  #     - spark_config:/opt/spark/conf/
+  #     - hadoop_config:/opt/hadoop/etc/hadoop/
+  #     - test_files:/opt/spark/tests
+  #   stdin_open: true 
+  #   tty: true
+  #   command:
+  #     - /bin/bash
+  #     - -c
+  #     - |
+  #       cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.role == worker
+  #   networks:
+  #     - hadoop-network 
 
   portainer:
     init: true
     image: portainer/portainer-ce:latest
     ports:
-      -  9443:9443
+      - target: 9444
+        published: 9444
     volumes:
-      -  /var/run/docker.sock:/var/run/docker.sock
-      - ./portainer_data:/data
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./portainer_data:/data
     deploy:
       placement:
         constraints:
-         - node.role == manager 
-    #networks:
-    #  - hadoop-network 
+          - node.role == manager  
+    networks:
+      - hadoop-network 
+
+networks:
+  hadoop-network:
+    driver: overlay
 
 volumes:
   hadoop_namenode1:
@@ -165,8 +382,48 @@ volumes:
   hadoop_journal1:
   hadoop_journal2:
   hadoop_journal3:
-#  hadoop_historyserver:
+  hadoop_historyserver:
+  spark_config:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/home/mpasini/dataplatform/dataplatform/conf_files/spark_conf/"
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/home/mpasini/dataplatform/dataplatform/conf_files/hadoop_conf/"
+  namenode2_config:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/home/mpasini/dataplatform/dataplatform/conf_files/namenode2_config/"
+  namenode1_config:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/home/mpasini/dataplatform/dataplatform/conf_files/namenode1_config/"
+#  test_files:
+# spark_config:
+#     driver_opts:
+#       type: nfs
+#       o: addr=137.204.74.55,rw,nfsvers=4
+#       device: :/mnt/mysharednfs/dataplatform/spark_conf/
+        
+#   hadoop_config:
+#     driver_opts:
+#       type: nfs
+#       o: addr=137.204.74.55,rw,nfsvers=4
+#       device: :/mnt/mysharednfs/dataplatform/hadoop_conf/
 
-#networks:
-#  hadoop-network:
-#    driver: overlay
+#   test_files:
+#     driver_opts:
+#       type: nfs
+#       o: addr=137.204.74.55,rw,nfsvers=4
+#       device: :/mnt/mysharednfs/dataplatform/tests/
+
+  
