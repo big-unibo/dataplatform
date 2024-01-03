@@ -185,8 +185,7 @@ services:
       #- ./dataplatform/conf_files/hadoop.conf
       #- ./dataplatform/conf_files/.env
     ports:
-      - target: ${RESOURCEMANAGERPORT}
-        published: ${RESOURCEMANAGERPORT}
+      - ${RESOURCEMANAGERPORT}:${RESOURCEMANAGERPORT}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
     command: 
@@ -230,8 +229,7 @@ services:
       #- ./dataplatform/conf_files/hadoop.conf
       #- ./dataplatform/conf_files/.env
     ports:
-      - target: ${YARNHISTSERVERPORT}
-        published: ${YARNHISTSERVERPORT}
+      - ${YARNHISTSERVERPORT}:${YARNHISTSERVERPORT}
     command:
       - /bin/bash
       - -c
@@ -257,8 +255,7 @@ services:
       - spark_config:${SPARKCONFDIR}
       - hadoop_config:${HADOOPCONFDIR}
     ports:
-      - target: ${SPARKMASTERPORT}
-        published: ${SPARKMASTERPORT}
+      - ${SPARKMASTERPORT}:${SPARKMASTERPORT}
     command:
       - /bin/bash
       - -c
@@ -307,8 +304,7 @@ services:
       - spark_config:${SPARKCONFDIR}
       - hadoop_config:${HADOOPCONFDIR}
     ports:
-      - target: ${SPARKHISTSERVERPORT}
-        published: ${SPARKHISTSERVERPORT}
+      - ${SPARKHISTSERVERPORT}:${SPARKHISTSERVERPORT}
     command:
       - /bin/bash
       - -c
@@ -359,8 +355,7 @@ services:
     init: true
     image: portainer/portainer-ce:latest
     ports:
-      - target: ${PORTAINERPORT}
-        published: ${PORTAINERPORT}
+      - ${PORTAINERPORT}:${PORTAINERPORT}
     volumes:
         - /var/run/docker.sock:/var/run/docker.sock
         - ./portainer_data:/data
@@ -369,7 +364,60 @@ services:
         constraints:
           - node.role == manager  
     networks:
-      - hadoop-network 
+      - hadoop-network
+
+  zoo1:
+    image: zookeeper:${ZOOKEPERVERSION}
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    networks:
+      - hadoop-network
+
+  zoo2:
+    image: zookeeper:${ZOOKEPERVERSION}
+    ports:
+      - 2182:2181
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager 
+    networks:
+      - hadoop-network
+
+  zoo3:
+    image: zookeeper:${ZOOKEPERVERSION}
+    ports:
+      - 2183:2181
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager 
+    networks:
+      - hadoop-network
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.4
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zoo1:2181,zoo2:2181,zoo3:2181
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager 
+    networks:
+      - hadoop-network
 
 networks:
   hadoop-network:
@@ -383,6 +431,8 @@ volumes:
   hadoop_journal2:
   hadoop_journal3:
   hadoop_historyserver:
+  kafka_data:
+  
   spark_config:
     driver: local
     driver_opts:
