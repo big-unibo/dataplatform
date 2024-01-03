@@ -4,12 +4,11 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
       - ${NAMENODEPORT}:${NAMENODEPORT}
-      - 8020:8020
     volumes:
        - hadoop_namenode1:${NAMEDIR}
       #- hadoop_config:${HADOOPCONFDIR}
     env_file:
-      - ./dataplatform/conf_files/hadoop.conf
+      - ./dataplatform/conf_files/namenode1.conf
       - ./dataplatform/conf_files/.env
     environment:
       - HADOOP_HOME=/opt/hadoop/
@@ -17,7 +16,7 @@ services:
       - /bin/bash
       - -c
       - |
-        sleep 40
+       sleep 20
         echo sudo mkdir -p ${NAMEDIR}
         sudo mkdir -p ${NAMEDIR}
         echo sudo chown hadoop ${NAMEDIR}
@@ -43,9 +42,21 @@ services:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
-    
+    networks:
+      - hadoop-network 
+
+  activator:
+    image: apache/hadoop:${HADOOPVERSION}
+    env_file:
+      - ./dataplatform/conf_files/hadoop.conf
+      - ./dataplatform/conf_files/.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+       sleep 60
+        hdfs haadmin -transitionToActive nn1 
+
   namenode2:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
@@ -54,7 +65,7 @@ services:
       - hadoop_namenode2:${NAMEDIR}
       #- hadoop_config:${HADOOPCONFDIR}
     env_file:
-      - ./dataplatform/conf_files/hadoop.conf
+      - ./dataplatform/conf_files/namenode2.conf
       - ./dataplatform/conf_files/.env
     environment:
       - HADOOP_HOME=/opt/hadoop/
@@ -62,7 +73,7 @@ services:
       - /bin/bash
       - -c
       - |
-        sleep 40000000
+        sleep 40
         mkdir -p ${NAMEDIR}
         sudo chown hadoop ${NAMEDIR}
         if [ "`ls -A ${NAMEDIR}`" == "" ]; then
@@ -74,9 +85,37 @@ services:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
-
+    networks:
+      - hadoop-network
+       
+  datanode:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_datanode:${DATADIR}
+      #- hadoop_config:${HADOOPCONFDIR}
+    env_file:
+      - ./dataplatform/conf_files/hadoop.conf
+      - ./dataplatform/conf_files/.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 60
+        mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - hadoop-network
+      
   journal1:
     image: apache/hadoop:${HADOOPVERSION}
     env_file:
@@ -118,8 +157,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
+    networks:
+      - hadoop-network 
 
   journal3:
     image: apache/hadoop:${HADOOPVERSION}
@@ -140,8 +179,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-    #networks:
-    #  - hadoop-network 
+    networks:
+      - hadoop-network 
 
   portainer:
     init: true
@@ -155,8 +194,8 @@ services:
       placement:
         constraints:
          - node.role == manager 
-    #networks:
-    #  - hadoop-network 
+    networks:
+      - hadoop-network 
 
 volumes:
   hadoop_namenode1:
@@ -167,6 +206,6 @@ volumes:
   hadoop_journal3:
 #  hadoop_historyserver:
 
-#networks:
-#  hadoop-network:
-#    driver: overlay
+networks:
+  hadoop-network:
+    driver: overlay
