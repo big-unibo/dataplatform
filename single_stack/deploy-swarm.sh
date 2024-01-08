@@ -1,6 +1,6 @@
 #!/bin/bash
 set -o allexport
-source .env
+source ./../.env
 set +o allexport
 
 cp -f .env ./dataplatform/conf_files/
