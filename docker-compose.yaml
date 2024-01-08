@@ -5,11 +5,8 @@ services:
     ports:
       - ${NAMENODEPORT}:${NAMENODEPORT}
     volumes:
-      - hadoop_namenode1:${NAMEDIR}
+      - namenode1_data:${NAMEDIR}
       - namenode1_config:${HADOOPCONFDIR}
-    #env_file:
-      #- ./dataplatform/conf_files/namenode1.conf
-      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
@@ -46,11 +43,8 @@ services:
     ports:
       - ${NAMENODE2PORT}:${NAMENODE2PORT}
     volumes:
-      - hadoop_namenode2:${NAMEDIR}
+      - namenode2_data:${NAMEDIR}
       - namenode2_config:${HADOOPCONFDIR}
-    #env_file:
-      #- ./dataplatform/conf_files/namenode2.conf
-      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
@@ -73,11 +67,8 @@ services:
 
   journal1:
     image: apache/hadoop:${HADOOPVERSION}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
     volumes:
-      - hadoop_journal1:${JOURNALDIR}
+      - journal1_data:${JOURNALDIR}
       - hadoop_config:${HADOOPCONFDIR}
     command: 
       - /bin/bash
@@ -95,11 +86,8 @@ services:
 
   journal2:
     image: apache/hadoop:${HADOOPVERSION}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
     volumes:
-      - hadoop_journal2:${JOURNALDIR}
+      - journal2_data:${JOURNALDIR}
       - hadoop_config:${HADOOPCONFDIR}
     command:       
       - /bin/bash
@@ -117,11 +105,8 @@ services:
 
   journal3:
     image: apache/hadoop:${HADOOPVERSION}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
     volumes:
-      - hadoop_journal3:${JOURNALDIR}
+      - journal3_data:${JOURNALDIR}
       - hadoop_config:${HADOOPCONFDIR}
     command:
       - /bin/bash
@@ -137,34 +122,16 @@ services:
     networks:
       - hadoop-network 
 
-  # activator:
-  #   image: apache/hadoop:${HADOOPVERSION}
-  #   volumes:
-  #     - hadoop_config:${HADOOPCONFDIR}
-  #   #env_file:
-  #     #- ./dataplatform/conf_files/hadoop.conf
-  #     #- ./dataplatform/conf_files/.env
-  #   command:
-  #     - /bin/bash
-  #     - -c
-  #     - |
-  #       sleep 20
-  #       hdfs haadmin -transitionToActive nn1
-
   datanode:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
-      - hadoop_datanode:${DATADIR}
+      - datanode_data:${DATADIR}
       - hadoop_config:${HADOOPCONFDIR}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
     command:
       - /bin/bash
       - -c
       - |
         sleep 30
-        mkdir -p ${DATADIR}
         sudo chown hadoop ${DATADIR}
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
@@ -181,9 +148,6 @@ services:
 
   resourcemanager:
     image: apache/hadoop:${HADOOPVERSION}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
     ports:
       - ${RESOURCEMANAGERPORT}:${RESOURCEMANAGERPORT}
     volumes:
@@ -202,9 +166,6 @@ services:
 
   nodemanager:
     image: apache/hadoop:${HADOOPVERSION}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
     command:
@@ -223,11 +184,8 @@ services:
   historyserver:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
-      - ./hadoop_historyserver:/hadoop/yarn/timeline
+      - hadoop_historyserver:/hadoop/yarn/timeline
       - hadoop_config:${HADOOPCONFDIR}
-    #env_file:
-      #- ./dataplatform/conf_files/hadoop.conf
-      #- ./dataplatform/conf_files/.env
     ports:
       - ${YARNHISTSERVERPORT}:${YARNHISTSERVERPORT}
     command:
@@ -248,9 +206,6 @@ services:
     image: apache/spark:${SPARKVERSION}
     environment:
       - SPARK_NO_DAEMONIZE=true
-    #env_file:
-      #- ./dataplatform/conf_files/.env
-      #- ./dataplatform/conf_files/hadoop.conf
     volumes:
       - spark_config:${SPARKCONFDIR}
       - hadoop_config:${HADOOPCONFDIR}
@@ -273,9 +228,6 @@ services:
     image: apache/spark:${SPARKVERSION}
     environment:
       - SPARK_NO_DAEMONIZE=true
-    #env_file:
-      #- ./dataplatform/conf_files/.env
-      #- ./dataplatform/conf_files/hadoop.conf
     volumes:
       - spark_config:${SPARKCONFDIR}
       - hadoop_config:${HADOOPCONFDIR}
@@ -297,9 +249,6 @@ services:
     image: apache/spark:${SPARKVERSION}
     environment:
       - SPARK_NO_DAEMONIZE=true
-    #env_file:
-      #- ./dataplatform/conf_files/.env
-      #- ./dataplatform/conf_files/hadoop.conf
     volumes:
       - spark_config:${SPARKCONFDIR}
       - hadoop_config:${HADOOPCONFDIR}
@@ -367,7 +316,7 @@ services:
       - hadoop-network
 
   zoo1:
-    image: zookeeper:${ZOOKEPERVERSION}
+    image: zookeeper:${ZOOKEEPERVERSION}
     ports:
       - 2181:2181
     environment:
@@ -377,39 +326,31 @@ services:
       - hadoop-network
 
   zoo2:
-    image: zookeeper:${ZOOKEPERVERSION}
+    image: zookeeper:${ZOOKEEPERVERSION}
     ports:
       - 2182:2181
     environment:
       ZOO_MY_ID: 2
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager 
     networks:
       - hadoop-network
 
   zoo3:
-    image: zookeeper:${ZOOKEPERVERSION}
+    image: zookeeper:${ZOOKEEPERVERSION}
     ports:
       - 2183:2181
     environment:
       ZOO_MY_ID: 3
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager 
     networks:
       - hadoop-network
 
   kafka:
-    image: docker.io/bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:${KAFKAVERSION}
     ports:
       - "9092:9092"
     volumes:
-      - "kafka_data:/bitnami"
+      - kafka_data:/bitnami/
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zoo1:2181,zoo2:2181,zoo3:2181
     deploy:
@@ -424,51 +365,78 @@ networks:
     driver: overlay
 
 volumes:
-  hadoop_namenode1:
-  hadoop_namenode2:
-  hadoop_datanode:
-  hadoop_journal1:
-  hadoop_journal2:
-  hadoop_journal3:
-  hadoop_historyserver:
-  kafka_data:
-  
-  spark_config:
-    driver: local
+  namenode1_config:
     driver_opts:
-      type: "none"
-      o: "bind"
-      device: "/home/mpasini/dataplatform/dataplatform/conf_files/spark_conf/"
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/namenode1_conf/
+    
+  namenode1_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/namenode1_data/
+
+  namenode2_config:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/namenode2_conf/
+
+  namenode2_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/namenode2_data/
+
+  journal1_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/journal1_data/
+
+  journal2_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/journal2_data/
+
+  journal3_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/journal3_data/
+
+  datanode_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/datanode_data/
+
+  hadoop_historyserver:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/yarn_hist_server_data/
+
+  kafka_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/kafka_data/
+
+  spark_config:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: ":/mnt/mysharednfs/dataplatform/spark_conf/"
+        
   hadoop_config:
     driver: local
     driver_opts:
-      type: "none"
-      o: "bind"
-      device: "/home/mpasini/dataplatform/dataplatform/conf_files/hadoop_conf/"
-  namenode2_config:
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "/home/mpasini/dataplatform/dataplatform/conf_files/namenode2_config/"
-  namenode1_config:
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "/home/mpasini/dataplatform/dataplatform/conf_files/namenode1_config/"
-#  test_files:
-# spark_config:
-#     driver_opts:
-#       type: nfs
-#       o: addr=137.204.74.55,rw,nfsvers=4
-#       device: :/mnt/mysharednfs/dataplatform/spark_conf/
-        
-#   hadoop_config:
-#     driver_opts:
-#       type: nfs
-#       o: addr=137.204.74.55,rw,nfsvers=4
-#       device: :/mnt/mysharednfs/dataplatform/hadoop_conf/
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
+      device: ":/mnt/mysharednfs/dataplatform/hadoop_conf/"
 
 #   test_files:
 #     driver_opts:
