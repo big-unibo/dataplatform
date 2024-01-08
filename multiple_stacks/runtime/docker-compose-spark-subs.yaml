@@ -1,0 +1,91 @@
+version: "3.9"
+services:
+  spark-master:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    volumes:
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    ports:
+      - 7077:7077
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+        /opt/spark/sbin/start-master.sh
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - BIG-dataplatform-network 
+
+  spark-worker:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    volumes:
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+        /opt/spark/sbin/start-worker.sh spark://spark-master:7077
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - BIG-dataplatform-network 
+
+  spark-history-server:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    volumes:
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+    ports:
+      - 18080:18080
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p tmp/spark-events/
+        sudo chown spark tmp/spark-events/
+        if [ ! -d tmp/spark-events/ ]; then
+          echo "Spark logs data directory not found"
+          exit 2
+        fi
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+        /opt/spark/sbin/start-history-server.sh
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - BIG-dataplatform-network
+
+volumes:
+  spark_config:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: ":/mnt/mysharednfs/dataplatform/spark_conf/"
+        
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
+      device: ":/mnt/mysharednfs/dataplatform/hadoop_conf/"
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
