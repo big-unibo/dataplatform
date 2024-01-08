@@ -1,5 +1,6 @@
 /dataplatform/tests/HDFD_VENV_3.7
 /dataplatform/tests/HDFD_VENV_3.7
+/multiple_stacks/runtime/
 .idea/
 .vscode
 portainer_data
