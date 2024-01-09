@@ -1,0 +1,65 @@
+version: "3.9"
+services:
+  spark-yarn-test-env:
+    image: apache/spark:latest
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - HADOOP_CONF_DIR=/opt/spark/conf/
+    volumes:
+      - spark_config:/opt/spark/conf/
+      - hadoop_config:/opt/hadoop/etc/hadoop/
+      - test_files:/opt/spark/tests
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cp -r /opt/hadoop/etc/hadoop/* /opt/spark/conf/
+        tail -f /dev/null
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+    stdin_open: true 
+    tty: true
+    networks:
+      - BIG-dataplatform-network
+
+  portainer:
+    init: true
+    image: portainer/portainer-ce:latest
+    ports:
+      - 9443:9443
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./../../portainer_data:/data
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager  
+    networks:
+      - BIG-dataplatform-network
+
+volumes:
+  spark_config:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: ":/mnt/mysharednfs/dataplatform/spark_conf/"
+        
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
+      device: ":/mnt/mysharednfs/dataplatform/hadoop_conf/"
+
+  test_files:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/tests/
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
