@@ -39,6 +39,28 @@ services:
     networks:
       - BIG-dataplatform-network
 
+
+  oozie:
+    init: true
+    image: andlaz/hadoop-oozie:latest
+    ports:
+      - 11000:11000
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./../../portainer_data:/data
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager  
+    command:
+      - /bin/bash
+      - -c
+      - |
+        tail -f /dev/null
+    networks:
+      - BIG-dataplatform-network
+
+
 volumes:
   spark_config:
     driver_opts:
