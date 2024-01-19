@@ -7,6 +7,7 @@ services:
     volumes:
       - namenode1_data:/hadoop/dfs/name
       - namenode1_config:/opt/hadoop/etc/hadoop/
+      - scripts:/scripts/
     command:
       - /bin/bash
       - -c
@@ -26,10 +27,14 @@ services:
 
         if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
           echo "Formatting namenode name directory: /hadoop/dfs/name"
-          /opt/hadoop/bin/hdfs --config /opt/hadoop/etc/hadoop namenode -format TEST
+          /opt/hadoop/bin/hdfs --config /opt/hadoop/etc/hadoop namenode -format -y TEST
         else
           echo "/hadoop/dfs/name exists!"
         fi
+        hdfs zkfc -formatZK -nonInteractive
+        echo "Done formatting ZK ... starting zkfc"
+        hdfs --daemon start zkfc -Ddfs.ha.namenodeid=namenode1
+        echo "Started zkfc"
         hdfs --config /opt/hadoop/etc/hadoop namenode
     deploy:
       placement:
@@ -45,19 +50,23 @@ services:
     volumes:
       - namenode2_data:/hadoop/dfs/name
       - namenode2_config:/opt/hadoop/etc/hadoop/
+      - scripts:/scripts/
     command:
       - /bin/bash
       - -c
       - |
-        sleep 30
+        sleep 35
         mkdir -p /hadoop/dfs/name
         sudo chown hadoop /hadoop/dfs/name
+        chmod +x /scripts/fencing_script.sh
         if [ "`ls -A /hadoop/dfs/name`" == "" ]; then
           echo "Bootstrappppppping namenode2"
           /opt/hadoop/bin/hdfs namenode -bootstrapStandby
         fi
+        echo "starting zkfc"
+        hdfs --daemon start zkfc > zkfc_logs.txt
+        echo "Started zkfc"
         hdfs --config /opt/hadoop/etc/hadoop namenode
-        hdfs haadmin -transitionToActive nn1
     deploy:
       placement:
         constraints:
@@ -125,7 +134,7 @@ services:
   datanode:
     image: apache/hadoop:3.3.6
     volumes:
-      - datanode_data:/hadoop/dfs/data
+      - datanode1_data:/hadoop/dfs/data
       - hadoop_config:/opt/hadoop/etc/hadoop/
     command:
       - /bin/bash
@@ -142,11 +151,16 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
     networks:
       - BIG-dataplatform-network
 
 volumes:
+  scripts:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/scripts/
   namenode1_config:
     driver_opts:
       type: nfs
@@ -189,11 +203,11 @@ volumes:
       o: addr=137.204.74.55,rw,nfsvers=4
       device: :/mnt/mysharednfs/dataplatform/journal3_data/
 
-  datanode_data:
+  datanode1_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/datanode_data/
+      device: :/mnt/mysharednfs/dataplatform/datanode1_data/
 
   hadoop_config:
     driver: local
