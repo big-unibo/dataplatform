@@ -12,8 +12,7 @@ Services
 
 ## **HDFS**
 
-![](./image1.png){width="5.128650481189851in"
-height="2.2913167104111984in"}
+![Architecture image](doc/architecture.png)
 
 ### **Mode**
 
