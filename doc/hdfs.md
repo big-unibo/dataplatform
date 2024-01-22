@@ -12,7 +12,7 @@ Services
 
 ## **HDFS**
 
-![Architecture image](doc/architecture.png)
+![Architecture image](architecture.png)
 
 ### **Mode**
 
