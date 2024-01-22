@@ -1,1 +1,0 @@
-HDFS-SITE.XML_dfs.datanode.data.dir=file:///hadoop/dfs/data
