@@ -1,3 +1,4 @@
+
 ---
 Data Platform Documentation"
 ---
@@ -30,7 +31,7 @@ Services
 
 -   Each component data is persisted through a NFS. Each component has its own directory inside NFS.
 
--   [**High-availability is resolved client-side. Configuration must be shared between NameNodes, JournalNodes and HDFS clients**. Two default ways (we're using RequestHedgingProvider) of communicating with a nameservice. For this and a basic HDFS-HA setup, take a look at the [[official doc]](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HDFSHighAvailabilityWithQJM.html)
+-   **High-availability is resolved client-side. Configuration must be shared between NameNodes, JournalNodes and HDFS clients**. Two default ways (we're using RequestHedgingProvider) of communicating with a nameservice. For this and a basic HDFS-HA setup, take a look at the [[official doc]](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HDFSHighAvailabilityWithQJM.html)
 
 ### **Configuration**
 
@@ -94,7 +95,7 @@ Other "minor" property files:
 
 #### **JournalNode**
 
-They are a passive component. Must be in an odd number \> 3. They are responsible for logging every action the *active* namenode does and for keeping the state of the high-availability cluster always consistent. They NEED the same configuration passed to NameNodes and DataNodes since they will need to communicate between each-other. After
+They are a passive component. Must be in an odd number \> 3. They are responsible for logging every transaction occured in the HDFS. the *active* namenode does and for keeping the state of the high-availability cluster always consistent. They NEED the same configuration passed to NameNodes and DataNodes since they will need to communicate between each-other. After
 setup, they will be contacted by the two NameNodes (once their setup is completed) which will register to the JournalNodes, which will create the NameNode folder to store its logs and start the synching process. On cluster setup, they need to be formatted just as namenodes.
 
 Three main params needed:
@@ -105,7 +106,8 @@ Three main params needed:
 
 -   Log directory path
 
-Periodically, JournalNodes will synch with each-other to grant consistency between their logs. Every time the active namenode performs an action, it contacts (the primary or every one (?)) JournalNodes and log such action. Whenever a NameNode switches from *stand-by* state to *active* state, it contacts the journal nodes to assure its state is
+Periodically, JournalNodes will synch with each-other to grant consistency between their logs. Every time the active namenode performs an action, it logs the operation on **a majority** of JournalNodes. The standby namenode will constantly synch with the journalnodes to stay updated on the HDFS state.
+Whenever a NameNode switches from *stand-by* state to *active* state, it contacts the journal nodes to assure its state is
 consistent.
 They don't expose interfaces to users.
 
@@ -113,60 +115,89 @@ They don't expose interfaces to users.
 
 Active component. On first cluster setup, it needs to be formatted
 
->*hdfs \--config \${HADOOP_HOME}/etc/hadoop namenode -format ${CLUSTERNAME}*
+	hdfs --config ${HADOOP_HOME}/etc/hadoop namenode -format ${CLUSTERNAME}
 
 If the NameNode you're starting is a stand-by node, it should be formatted and put to stand-by, e.g.
 
->*hdfs namenode -bootstrapStandby*
+	hdfs namenode -bootstrapStandby
 
 After formatting (if needed), namenodes must be started.
->*hdfs \--config \$HADOOPCONFDIR namenode*
 
-it registers itself to the JournalNodes. Namenodes should be started after journal nodes are up and running. Namnodes expose two interfaces:
+	hdfs --config $HADOOPCONFDIR namenode
+
+it registers itself to the JournalNodes. Namenodes should be started after journal nodes are up and running. Namenodes expose two interfaces:
 
 -   **rpc-address**
 	 Contains the address to which clients should send RPCs. It can be defined in hdfs-site.xml. e.g.
-	> *fs.namenode.rpc-address.myhacluster.nn2=namenode2:8020*
+	> *dfs.namenode.rpc-address.myhacluster.nn2=namenode2:8020*
 	
 -   **service-rpc-address**
 	 Contains the address to which services should send RPCs. It can be defined in hdfs-site.xml. e.g.
-	> *fs.namenode.rpc-address.myhacluster.nn2=namenode2:8020*
+	> *dfs.namenode.servicerpc-address.myhacluster.nn2=namenode2:8021*
 
 -   **http-address**
 	Contains the address in which the namenode will expose its web UI. It can be defined in hdfs-site.xml. e.g.
-	> *fs.namenode.http-address.myhacluster.nn2=namenode2:9870*
+	> *dfs.namenode.http-address.myhacluster.nn2=namenode2:9870*
 
-Once both NameNodes have started, one of them can be elected **active** (if there isn't already an active namenode defined)**.** This can be done through:
->*hdfs haadmin -transitionToActive namenode1*
+These addresses are used for client purposes as much as setup options, so in case of multiple coexisting networks it is mandatory that namenodes bind on address 0.0.0.0 in order to be able to fetch communication from each network. This can be done by setting the following properties:
+> *dfs.namenode.http-address.myhacluster.nn1=0.0.0.0:9870*
+> *dfs.namenode.servicerpc-bind-host0.0.0.0*
+>  *dfs.namenode.rpc-bind-host:0.0.0.0*
 
-##### **Failovers policy**
+	
+Once both NameNodes have started, one of them must be elected **active** (if there isn't already an active namenode defined)**.** Namenodes election and eventual failovers can be implemented two ways:
 
-There are two ways to handle a namenode failoves:
+-   **Manually**: default mode, manually switch the active namenode, e.g.
 
--   Manually: default mode, manually switch the active namenode, e.g.
+	    hdfs haadmin -transitionToActive {namenode_id}
 
-      > *hdfs haadmin -transitionToActive namenode2*
+-   **Automatically**: requires a ZooKeeper quorum. To enable automatic election and failover control of Namenodes, the following property needs to be set to true in *hdfs-site.xml*
+	 >dfs.ha.automatic-failover.enabled=true
+	 
+	 Once setting up a ZooKeeper cluster with an odd n > 3 servers, Namenodes can be configured to identify such quorum via 		a *core-site.xml* property
+ 	> ha.zookeeper.quorum={zookeeper1_address}:2181,{zookeeper2_address}:2181,{zookeeper3_address}:2181
+ 	
+	If automatic failover is enabled, one of the two namenodes needs to create a znode in the ZK quorum via
+	
+		hdfs zkfc -formatZK -nonInteractive
+	Upon creation of the znode, a ZooKeeper Failover Controller daemon must be started on all the machine hosting namenodes via
 
--   Automatically: Apache ZooKeeper is required, see the related section in this doc.
+		hdfs --daemon start zkfc
+		
+	Each of the ZKFC  will then initiate a session with the ZK quorum and try to get a lock on the previously created znode. The one namenode that successfully acquires the lock becomes the active namenode. The ZKFC on the other namenodes will then inform his namenode to go into standby mode. Periodically (5s by default), the ZKFCs send a ping to namenodes for health check and in case of *one* missing health check they  proceed to close the  previouvsly initiated session with the ZK quorum, initiating a failover.
 
 #### **DataNode**
 
 Doesn't need much setup if not for the same configuration passed to NameNodes and Journal Nodes. On setup, DataNodes **actively** contact the active NameNode and register themselves to it. It's not the other way around, namenodes don't need to know apriori who and where the data nodes are, they will know where they are once they register to them.
+They send heartbeats and block location information updates on both the active and the stand-by namenode.
 
 ### **Communication**
 
-Each service endpoints are defined and exposed through property files. *In Hadoop, each entity is also an HDFS client* which leverages property files to know where to find other services. [The resolution of which namenode is the active happens **client-side**. This means that if you want to add a container to the cluster and want to be able to interact with HDFS, not only should it have HDFS installed in it but it should contain the configuration of the HA cluster.
+Each service endpoints are defined and exposed through property files. *In Hadoop, each entity is also an HDFS client* which leverages property files to know where to find other services. [The resolution of which namenode is the active happens **client-side**. This means that if you want to add a container to the cluster and want to be able to interact with HDFS, not only should it have HDFS installed in it but it should contain  all the property files definint the the HA cluster's configuration.
 
 There are two ways of determining who is the active NameNode, and the preferred way can be specified inside hdfs-site.xml by specifying one of the two default methods:
 
--   **ConfiguredFailoverProxyProvider**: There is knowledge somewhere (usually implemented through ZooKeper) about which is the currently active namenode. See the related section.
+-   **ConfiguredFailoverProxyProvider**: The active namenode is determined by the ZKFC.
 
 -   **RequestHedgingProxyProvider**: for the first call, concurrently invokes all namenodes to determine the active one, and on subsequent requests, invokes the active namenode until a fail-over happens.
 
 ### **Setup Requirements**
 
--   On first-cluster-startup, there's a strict order to follow: JournalNodes -> Active NN -> Passive NN
+-   On first-cluster-startup, there's a strict order to follow: JournalNodes -> Active NN -> Passive NN.
 
 ## YARN
+It comes from the same Docker Hub Image as HDFS, so in terms of configuration the same two modalities exists:
+
+ - **Configuration files**
+ - **Property files**
+ 
+In terms of property files, YARN relies on the same file HDFS does, meaning that property files should be shared between these two and consistency granted.
+Specifically, *yarn-site.xml* allows to define network configurations and services' addresses. Needless to say, each YARN service must share the same configuration.
+
+### ResourceManager
+### NodeManager
+Upon creation it registers to the ResourceManager.
+### HistoryServer
+Logs data into HDFS.
 
 # SPARK
