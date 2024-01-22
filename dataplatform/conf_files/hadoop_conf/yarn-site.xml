@@ -2,6 +2,7 @@
 <property><name>yarn.timeline-service.leveldb-timeline-store.path</name><value>/hadoop/yarn/timeline</value></property>
 <property><name>yarn.timeline-service.hostname</name><value>historyserver</value></property>
 <property><name>yarn.resourcemanager.hostname</name><value>resourcemanager</value></property>
+<property><name>yarn.resourcemanager.bind-host</name><value>0.0.0.0</value></property>
 <property><name>yarn.timeline-service.entity-group-fs-store.summary-entity-types</name><value>YARN_APPLICATION,YARN_APPLICATION_ATTEMPT,YARN_CONTAINER,spark_event_v01</value></property>
 <property><name>yarn.nodemanager.pmem-check-enabled</name><value>false</value></property>
 <property><name>yarn.log.server.url</name><value>http://historyserver:8188/hadoop/yarn/timeline</value></property>

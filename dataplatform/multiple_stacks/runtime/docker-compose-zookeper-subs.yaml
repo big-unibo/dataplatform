@@ -1,0 +1,56 @@
+version: "3.9"
+services:
+  zoo1:
+    image: zookeeper:latest
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    volumes:
+      - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
+    networks:
+      - BIG-dataplatform-network
+
+  zoo2:
+    image: zookeeper:latest
+    ports:
+      - 2182:2181
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    volumes:
+      - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
+    networks:
+      - BIG-dataplatform-network
+
+  zoo3:
+    image: zookeeper:latest
+    ports:
+      - 2183:2181
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+    volumes:
+      - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
+    networks:
+      - BIG-dataplatform-network
+
+volumes:
+  spark_config:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: ":/mnt/mysharednfs/dataplatform/spark_conf/"
+        
+  hadoop_zoo_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
+      device: ":/mnt/mysharednfs/dataplatform/hadoop_zoo_conf/"
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network

@@ -1,8 +1,19 @@
 /dataplatform/tests/HDFD_VENV_3.7
 /dataplatform/tests/HDFD_VENV_3.7
+/dataplatformm/multiple_stacks/runtime/
+/dataplatformm/single_stacks/runtime/
 .idea/
 .vscode
-
+portainer_data
+hadoop_historyserver
+*_logs.*
+hadoop_journal1
+hadoop_journal2
+hadoop_journal3
+hadoop_namenode1
+hadoop_namenode2
+hadoop_datanode
+kafka_data
 # Created by https://www.gitignore.io/api/java,linux,macos,gradle,windows,eclipse,intellij
 # Edit at https://www.gitignore.io/?templates=java,linux,macos,gradle,windows,eclipse,intellij
 
