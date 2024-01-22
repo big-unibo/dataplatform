@@ -8,12 +8,6 @@ Services
 
 3.  Spark, version: 3
 
-1.  Hadoop HDFS, version: 3.3.6
-
-2.  Hadoop YARN, version: 3.3.6
-
-3.  Spark, version: 3
-
 # **Hadoop**
 
 ## **HDFS**
