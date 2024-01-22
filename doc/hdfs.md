@@ -1,8 +1,12 @@
+---
+Data Platform Documentation"
+---
+Services
+1.  Hadoop HDFS, version: 3.3.6
 
----
-subtitle: "[]{#_kwro3pg2vbon .anchor}Services:"
-title: "[]{#_vw946pd94uai .anchor}Data Platform Documentation"
----
+2.  Hadoop YARN, version: 3.3.6
+
+3.  Spark, version: 3
 
 1.  Hadoop HDFS, version: 3.3.6
 
