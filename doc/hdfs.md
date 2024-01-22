@@ -186,6 +186,7 @@ There are two ways of determining who is the active NameNode, and the preferred 
 -   On first-cluster-startup, there's a strict order to follow: JournalNodes -> Active NN -> Passive NN.
 
 ## YARN
+![Architecture image](yarn.svgg)
 It comes from the same Docker Hub Image as HDFS, so in terms of configuration the same two modalities exists:
 
  - **Configuration files**
