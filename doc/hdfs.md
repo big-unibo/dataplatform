@@ -25,9 +25,7 @@ Services
 
 -   Stand-by namenodes stay updated thanks to JournalNodes
 
--   Every action performed by *active* namenode is logged throughjournals.
-
--   Periodically, [JournalNodes]{.underline} synch with themselves and with namenodes to grant consistency and integrity.
+-   Every action performed by *active* namenode is logged through journals: the policy is to write on the majority of Journal Nodes.
 
 -   Each component data is persisted through a NFS. Each component has its own directory inside NFS.
 
@@ -35,7 +33,7 @@ Services
 
 ### **Configuration**
 
-Configuration properties define the cluster setup, how services find and interact with each other and [how clients can communicate with the hadoop cluster]{.underline}.
+Configuration properties define the cluster setup, how services find and interact with each other and _how clients can communicate with the hadoop cluster_.
 Configuration can be passed to HDFS services (using apache/hadoop docker image) in two ways.
 
 #### **Configuration file**
@@ -44,7 +42,7 @@ It's a simple *.conf* file which will be parsed into environmental variables in 
 
 > *CORE-SITE.XML_hadoop.http.staticuser.user=root*
 
-where the "\_" and "=" are split characters ([an thus only one occurrence of each should appear in the property string]{.underline}) and the first part refers to the Hadoop property file this property belongs to (core-site.xml), the middle parte refers to the property name (hadoop.http.staticuser.user) and the third part of the split refers to the value of such property (root). Such .conf file needs to be passed as *env_file* inside the docker stack file.
+where the "\_" and "=" are split characters _and thus only one occurrence of each should appear in the property string_ and the first part refers to the Hadoop property file this property belongs to (core-site.xml), the middle parte refers to the property name (hadoop.http.staticuser.user) and the third part of the split refers to the value of such property (root). Such .conf file needs to be passed as *env_file* inside the docker stack file.
 
 #### **Property files**
 
@@ -72,7 +70,7 @@ Other "minor" property files:
 
 -   **hadoop-policy.xml**
 -   **hadoop-env.sh**
-	Can define variable that will be translated into environmental variables when the hadoop service is started ([you won't see these variables on container setup!)]{.underline}
+	Can define variable that will be translated into environmental variables when the hadoop service is started _you won't see these variables on container setup!_
 
 -   **hdfs-rbf-site.xml**
 
@@ -125,7 +123,7 @@ After formatting (if needed), namenodes must be started.
 
 	hdfs --config $HADOOPCONFDIR namenode
 
-it registers itself to the JournalNodes. Namenodes should be started after journal nodes are up and running. Namenodes expose two interfaces:
+it registers itself to the JournalNodes. Namenodes should be started after journal nodes are up and running. Namenodes expose three interfaces:
 
 -   **rpc-address**
 	 Contains the address to which clients should send RPCs. It can be defined in hdfs-site.xml. e.g.
@@ -139,9 +137,11 @@ it registers itself to the JournalNodes. Namenodes should be started after journ
 	Contains the address in which the namenode will expose its web UI. It can be defined in hdfs-site.xml. e.g.
 	> *dfs.namenode.http-address.myhacluster.nn2=namenode2:9870*
 
-These addresses are used for client purposes as much as setup options, so in case of multiple coexisting networks it is mandatory that namenodes bind on address 0.0.0.0 in order to be able to fetch communication from each network. This can be done by setting the following properties:
+These addresses are used for client purposes as much as setup options, so in case of multiple coexisting networks (as in Docker Swarm) it is mandatory that namenodes bind on address 0.0.0.0 in order to be able to fetch communication from each network. This can be done by setting the following properties:
 > *dfs.namenode.http-address.myhacluster.nn1=0.0.0.0:9870*
+
 > *dfs.namenode.servicerpc-bind-host0.0.0.0*
+
 >  *dfs.namenode.rpc-bind-host:0.0.0.0*
 
 	
@@ -157,14 +157,14 @@ Once both NameNodes have started, one of them must be elected **active** (if the
 	 Once setting up a ZooKeeper cluster with an odd n > 3 servers, Namenodes can be configured to identify such quorum via 		a *core-site.xml* property
  	> ha.zookeeper.quorum={zookeeper1_address}:2181,{zookeeper2_address}:2181,{zookeeper3_address}:2181
  	
-	If automatic failover is enabled, one of the two namenodes needs to create a znode in the ZK quorum via
+	If automatic failover is enabled then before starting up, one of the two namenodes must create a znode in the ZK quorum via
 	
 		hdfs zkfc -formatZK -nonInteractive
-	Upon creation of the znode, a ZooKeeper Failover Controller daemon must be started on all the machine hosting namenodes via
+	Upon creation of the znode and once again before startin the namenode process, a ZooKeeper Failover Controller daemon must be started on all the machine hosting namenodes via
 
 		hdfs --daemon start zkfc
 		
-	Each of the ZKFC  will then initiate a session with the ZK quorum and try to get a lock on the previously created znode. The one namenode that successfully acquires the lock becomes the active namenode. The ZKFC on the other namenodes will then inform his namenode to go into standby mode. Periodically (5s by default), the ZKFCs send a ping to namenodes for health check and in case of *one* missing health check they  proceed to close the  previouvsly initiated session with the ZK quorum, initiating a failover.
+	Each of the ZKFC  will then initiate a session with the ZK quorum and try to get a lock on the previously created znode. The one namenode that successfully acquires the lock becomes the active namenode. The ZKFC on the other namenodes will then inform its namenode to go into standby mode. Periodically (5s by default), the ZKFC sends a ping to its namenode as a health check and in case of *one* missing health check they  proceed to close the  previouvsly initiated session with the ZK quorum, initiating a failover.
 
 #### **DataNode**
 
@@ -173,7 +173,7 @@ They send heartbeats and block location information updates on both the active a
 
 ### **Communication**
 
-Each service endpoints are defined and exposed through property files. *In Hadoop, each entity is also an HDFS client* which leverages property files to know where to find other services. [The resolution of which namenode is the active happens **client-side**. This means that if you want to add a container to the cluster and want to be able to interact with HDFS, not only should it have HDFS installed in it but it should contain  all the property files definint the the HA cluster's configuration.
+Each service endpoints are defined and exposed through property files. *In Hadoop, each entity is also an HDFS client* which leverages property files to know where to find other services. _The resolution of which namenode is the active happens **client-side**. This means that if you want to add a container to the cluster and want to be able to interact with HDFS, not only should it have HDFS installed in it but it should contain  all the property files definint the the HA cluster's configuration._
 
 There are two ways of determining who is the active NameNode, and the preferred way can be specified inside hdfs-site.xml by specifying one of the two default methods:
 
