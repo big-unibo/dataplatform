@@ -21,7 +21,7 @@ services:
 
         if [ -z "${CLUSTERNAME}" ]; then
           echo "Cluster name not specified"
-          export CLUSTERNAME=test
+          export CLUSTERNAME=${CLUSTERNAME}
         fi
 
         if [ "`ls -A ${NAMEDIR}`" == "" ]; then
@@ -39,6 +39,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
     
@@ -68,6 +69,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
 
@@ -87,6 +89,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
 
@@ -106,6 +109,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
 
@@ -125,6 +129,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
 
@@ -151,6 +156,7 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
 
@@ -177,6 +183,7 @@ services:
           - node.labels.running_datanode1==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
+          - node.hostname != CB-Mass-Node1
 
     networks:
       - BIG-dataplatform-network
@@ -204,6 +211,7 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode1==0
           - node.labels.running_datanode4==0
+          - node.hostname != CB-Mass-Node1
 
     networks:
       - BIG-dataplatform-network
@@ -231,6 +239,7 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode1==0
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
 
@@ -243,6 +252,7 @@ services:
       placement:
         constraints:
          - node.role==manager
+         - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
 
@@ -251,80 +261,80 @@ volumes:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/service_labeling/
+      device: :${NFSPATH}/dataplatform_config/service_labeling/
   
   namenode1_config:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/namenode1_conf/
+      device: :${NFSPATH}/dataplatform_config/namenode1_conf/
     
   namenode1_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/namenode1_data/
+      device: :${NFSPATH}/dataplatform_config/namenode1_data/
 
   namenode2_config:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/namenode2_conf/
+      device: :${NFSPATH}/dataplatform_config/namenode2_conf/
 
   namenode2_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/namenode2_data/
+      device: :${NFSPATH}/dataplatform_config/namenode2_data/
 
   journal1_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/journal1_data/
+      device: :${NFSPATH}/dataplatform_config/journal1_data/
 
   journal2_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/journal2_data/
+      device: :${NFSPATH}/dataplatform_config/journal2_data/
 
   journal3_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/journal3_data/
+      device: :${NFSPATH}/dataplatform_config/journal3_data/
 
   datanode1_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/datanode1_data/
+      device: :${NFSPATH}/dataplatform_config/datanode1_data/
 
   datanode2_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/datanode2_data/
+      device: :${NFSPATH}/dataplatform_config/datanode2_data/
 
   datanode3_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/datanode3_data/
+      device: :${NFSPATH}/dataplatform_config/datanode3_data/
 
   datanode4_data:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/datanode4_data/
+      device: :${NFSPATH}/dataplatform_config/datanode4_data/
 
   hadoop_config:
     driver: local
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
-      device: ":/mnt/mysharednfs/dataplatform/hadoop_conf/"
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
   
 networks:
   BIG-dataplatform-network:
