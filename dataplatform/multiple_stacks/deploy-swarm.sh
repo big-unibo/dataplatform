@@ -5,6 +5,20 @@ set +o allexport
 
 mkdir runtime
 
+for stack in "$@"
+do
+    if [ "$stack" == "airflow" ]; then
+        # Se lo stack è "airflow", non effettuare la sostituzione
+        cp "docker-compose-${stack}.yaml" "runtime/docker-compose-${stack}-subs.yaml"
+    else
+        # Altrimenti, effettua la sostituzione delle variabili di ambiente
+        envsubst < "docker-compose-${stack}.yaml" > "runtime/docker-compose-${stack}-subs.yaml"
+    fi
+
+    # Deploya lo stack
+    docker stack deploy -c "runtime/docker-compose-${stack}-subs.yaml" "DataPlatform-${stack}"
+done
+
 # ZooKeper stack
 #envsubst < docker-compose-zookeper.yaml > runtime/docker-compose-zookeper-subs.yaml
 #docker stack deploy -c runtime/docker-compose-zookeper-subs.yaml DataPlatform-ZooKeper
@@ -30,4 +44,4 @@ mkdir runtime
 ##docker stack deploy -c runtime/docker-compose-utils-subs.yaml DataPlatform-utils
 
 #Airflow stack
-docker stack deploy -c docker-compose-airflow.yaml DataPlatform-airflow
+#docker stack deploy -c docker-compose-airflow.yaml DataPlatform-airflow

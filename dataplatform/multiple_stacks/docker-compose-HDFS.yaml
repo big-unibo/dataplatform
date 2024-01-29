@@ -7,7 +7,6 @@ services:
     volumes:
       - namenode1_data:${NAMEDIR}
       - namenode1_config:${HADOOPCONFDIR}
-      - scripts:/scripts/
     command:
       - /bin/bash
       - -c
@@ -33,7 +32,7 @@ services:
         fi
         hdfs zkfc -formatZK -nonInteractive
         echo "Done formatting ZK ... starting zkfc"
-        hdfs --daemon start zkfc -Ddfs.ha.namenodeid=namenode1
+        hdfs --daemon start zkfc > zkfc_logs.txt
         echo "Started zkfc"
         hdfs --config /opt/hadoop/etc/hadoop namenode
     deploy:
@@ -50,15 +49,13 @@ services:
     volumes:
       - namenode2_data:${NAMEDIR}
       - namenode2_config:${HADOOPCONFDIR}
-      - scripts:/scripts/
     command:
       - /bin/bash
       - -c
       - |
-        sleep 35
+        sleep 30
         mkdir -p ${NAMEDIR}
         sudo chown hadoop ${NAMEDIR}
-        chmod +x /scripts/fencing_script.sh
         if [ "`ls -A ${NAMEDIR}`" == "" ]; then
           echo "Bootstrappppppping namenode2"
           /opt/hadoop/bin/hdfs namenode -bootstrapStandby
@@ -131,7 +128,7 @@ services:
     networks:
       - BIG-dataplatform-network
 
-  datanode:
+  datanode1:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - datanode1_data:${DATADIR}
@@ -148,19 +145,114 @@ services:
         fi
         hdfs --config /opt/hadoop/etc/hadoop datanode
     deploy:
-      replicas: 1
       placement:
         constraints:
           - node.role == worker
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+    networks:
+      - BIG-dataplatform-network
+
+  datanode2:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - datanode2_data:${DATADIR}
+      - hadoop_config:${HADOOPCONFDIR}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo chown hadoop ${DATADIR}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+
+    networks:
+      - BIG-dataplatform-network
+
+  datanode3:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - datanode3_data:${DATADIR}
+      - hadoop_config:${HADOOPCONFDIR}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo chown hadoop ${DATADIR}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode4==0
+
+    networks:
+      - BIG-dataplatform-network
+
+  datanode4:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - datanode4_data:${DATADIR}
+      - hadoop_config:${HADOOPCONFDIR}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo chown hadoop ${DATADIR}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode1==0
+    networks:
+      - BIG-dataplatform-network
+
+  dockerautolabel:
+    image: davideshay/dockerautolabel:latest
+    volumes:
+       - service_labeling:/config
+       - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+         - node.role==manager
     networks:
       - BIG-dataplatform-network
 
 volumes:
-  scripts:
+  service_labeling:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/scripts/
+      device: :/mnt/mysharednfs/dataplatform/service_labeling/
+  
   namenode1_config:
     driver_opts:
       type: nfs
@@ -208,6 +300,24 @@ volumes:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
       device: :/mnt/mysharednfs/dataplatform/datanode1_data/
+
+  datanode2_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/datanode2_data/
+
+  datanode3_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/datanode3_data/
+
+  datanode4_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: :/mnt/mysharednfs/dataplatform/datanode4_data/
 
   hadoop_config:
     driver: local
