@@ -61,7 +61,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
+      - postgres_db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
@@ -88,6 +88,7 @@ services:
     command: webserver
     ports:
       - "8081:8080"
+    volumes:
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
@@ -194,7 +195,13 @@ networks:
     name: BIG-dataplatform-network
 
 volumes:
-  postgres-db-volume:
+  postgres_db_data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
+      device: ":/mnt/mysharednfs/dataplatform/airflow_postgres_data/"
+
   airflow_data:
     driver: local
     driver_opts:
