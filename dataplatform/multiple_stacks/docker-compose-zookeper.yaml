@@ -11,6 +11,11 @@ services:
       - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
     networks:
       - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
 
   zoo2:
     image: zookeeper:${ZOOKEEPERVERSION}
@@ -23,6 +28,11 @@ services:
       - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
     networks:
       - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
 
   zoo3:
     image: zookeeper:${ZOOKEEPERVERSION}
@@ -35,20 +45,25 @@ services:
       - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
     networks:
       - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
 
 volumes:
   spark_config:
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4
-      device: ":/mnt/mysharednfs/dataplatform/spark_conf/"
+      device: ":${NFSPATH}/dataplatform_config/spark_conf/"
         
   hadoop_zoo_config:
     driver: local
     driver_opts:
       type: nfs
       o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
-      device: ":/mnt/mysharednfs/dataplatform/hadoop_zoo_conf/"
+      device: ":${NFSPATH}/dataplatform_config/hadoop_zoo_conf/"
 
 networks:
   BIG-dataplatform-network:
