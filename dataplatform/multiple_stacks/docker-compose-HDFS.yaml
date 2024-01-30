@@ -243,26 +243,7 @@ services:
   #   networks:
   #     - BIG-dataplatform-network
 
-  dockerautolabel:
-    image: davideshay/dockerautolabel:latest
-    volumes:
-       - service_labeling:/config
-       - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      placement:
-        constraints:
-         - node.role==manager
-         - node.hostname != CB-Mass-Node1
-    networks:
-      - BIG-dataplatform-network
-
 volumes:
-  service_labeling:
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: :${NFSPATH}/dataplatform_config/service_labeling/
-  
   namenode1_config:
     driver_opts:
       type: nfs

@@ -54,7 +54,28 @@ services:
           - node.labels.running_zoo1==0
           - node.labels.running_zoo2==0
 
+  dockerautolabel:
+    image: davideshay/dockerautolabel:latest
+    volumes:
+       - service_labeling:/config
+       - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+         - node.role==manager
+         - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+
 volumes:
+
+  service_labeling:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/service_labeling/
+      
   spark_config:
     driver_opts:
       type: nfs
