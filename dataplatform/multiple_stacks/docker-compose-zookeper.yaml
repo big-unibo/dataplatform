@@ -15,7 +15,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.labels.running_zoo2==0
+          - node.labels.running_zoo3==0
 
   zoo2:
     image: zookeeper:${ZOOKEEPERVERSION}
@@ -32,7 +33,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.labels.running_zoo1==0
+          - node.labels.running_zoo3==0
 
   zoo3:
     image: zookeeper:${ZOOKEEPERVERSION}
@@ -49,20 +51,21 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.labels.running_zoo1==0
+          - node.labels.running_zoo2==0
 
 volumes:
   spark_config:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
+      o: addr=${NFSADDRESS},rw,nfsvers=4
       device: ":${NFSPATH}/dataplatform_config/spark_conf/"
         
   hadoop_zoo_config:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/hadoop_zoo_conf/"
 
 networks:

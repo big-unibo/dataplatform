@@ -38,8 +38,8 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.role == worker
+          - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network 
     
@@ -68,8 +68,8 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.role == worker
+          - node.labels.running_namenode1==0
     networks:
       - BIG-dataplatform-network 
 
@@ -89,7 +89,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.labels.running_journal2==0
+          - node.labels.running_journal3==0
     networks:
       - BIG-dataplatform-network
 
@@ -109,7 +110,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.labels.running_journal1==0
+          - node.labels.running_journal3==0
     networks:
       - BIG-dataplatform-network 
 
@@ -129,7 +131,8 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.labels.running_journal2==0
+          - node.labels.running_journal1==0
     networks:
       - BIG-dataplatform-network
 
@@ -152,11 +155,10 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == worker
-          - node.labels.running_datanode2==0
-          - node.labels.running_datanode3==0
-          - node.labels.running_datanode4==0
           - node.hostname != CB-Mass-Node1
+          - node.labels.running_datanode2==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network
 
@@ -179,12 +181,10 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == worker
-          - node.labels.running_datanode1==0
-          - node.labels.running_datanode3==0
-          - node.labels.running_datanode4==0
           - node.hostname != CB-Mass-Node1
-
+          - node.labels.running_datanode1==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network
 
