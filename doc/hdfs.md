@@ -1,4 +1,5 @@
 
+
 ---
 Data Platform Documentation"
 ---
@@ -42,7 +43,7 @@ It's a simple *.conf* file which will be parsed into environmental variables in 
 
 > *CORE-SITE.XML_hadoop.http.staticuser.user=root*
 
-where the "\_" and "=" are split characters _and thus only one occurrence of each should appear in the property string_ and the first part refers to the Hadoop property file this property belongs to (core-site.xml), the middle parte refers to the property name (hadoop.http.staticuser.user) and the third part of the split refers to the value of such property (root). Such .conf file needs to be passed as *env_file* inside the docker stack file.
+where the "\_" and "=" are split characters <u> and thus only one occurrence of each should appear in the property string </u>and the first part refers to the Hadoop property file this property belongs to (core-site.xml), the middle parte refers to the property name (hadoop.http.staticuser.user) and the third part of the split refers to the value of such property (root). Such .conf file needs to be passed as *env_file* inside the docker stack file.
 
 #### **Property files**
 
@@ -173,7 +174,7 @@ They send heartbeats and block location information updates on both the active a
 
 ### **Communication**
 
-Each service endpoints are defined and exposed through property files. *In Hadoop, each entity is also an HDFS client* which leverages property files to know where to find other services. _The resolution of which namenode is the active happens **client-side**. This means that if you want to add a container to the cluster and want to be able to interact with HDFS, not only should it have HDFS installed in it but it should contain  all the property files definint the the HA cluster's configuration._
+Each service endpoints are defined and exposed through property files. *In Hadoop, each entity is also an HDFS client* which leverages property files to know where to find other services. <u>The resolution of which namenode is the active happens **client-side**. This means that if you want to add a container to the cluster and want to be able to interact with HDFS, not only should it have HDFS installed in it but it should contain  all the property files definint the the HA cluster's configuration.</u>
 
 There are two ways of determining who is the active NameNode, and the preferred way can be specified inside hdfs-site.xml by specifying one of the two default methods:
 
@@ -196,9 +197,23 @@ In terms of property files, YARN relies on the same file HDFS does, meaning that
 Specifically, *yarn-site.xml* allows to define network configurations and services' addresses. Needless to say, each YARN service must share the same configuration.
 
 ### ResourceManager
+Master of the YARN cluster. It offers a few interfaces, each to be configured in *yarn-site.xml*.
+>  *yarn.resourcemanager.address=resourcemanager:8032*
+>  *yarn.resourcemanager.resource-tracker.address=resourcemanager:8031*
+>  *yarn.resourcemanager.scheduler.address=resourcemanager:8030*
+
+As for namenodes and, on a wider scale, each service that needs to be contacted by others, ResourceManager <u>must</u> bind on 0.0.0.0 in case of multiple networks coexisting
+>  *yarn.resourcemanager.bind-host=0.0.0.0*
 ### NodeManager
 Upon creation it registers to the ResourceManager.
 ### HistoryServer
-Logs data into HDFS.
+Logs data into HDFS. It is accessed by both Resource Manager and Node Managers. YARN history server must be enabled via *yarn-site.xml* property
+>  *yarn.timeline-service.enabled=true*
+>  
+and its address specified via
+>  *yarn.timeline-service.webapp.address*
+
+Once again, HistoryServer needs to bind on
+> *yarn.timeline-service.bind-host=0.0.0.0*
 
 # SPARK
