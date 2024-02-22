@@ -1,0 +1,41 @@
+version: "3.9"
+services:
+
+  # Orion is the context broker
+  orion:
+    init: true
+    image: fiware/orion:latest              # This variable `${ORION_VERSION}` is drawn from the `.env` file
+    depends_on:
+      - mongo-db                           # Create the `mongo-db` before this container
+    networks:
+      - BIG-dataplatform-network
+    ports:
+      - "8082:1026"  # Map a local port to a container's port (e.g., `IP:8082` to `IP:1026`)
+    # Append this string to the final command that is executed by the container
+    # Here, we are launching the OCB with: the possibility to perform "cors" requests, the name of the database, and the maximum payload parameter
+    # You can also set the log level by adding `-logLevel DEBUG`
+    command: -corsOrigin __ALL -dbhost mongo-db -inReqPayloadMaxSize 5000000
+
+
+  # Database (orion + persistence)
+  mongo-db:
+    init: true
+    image: mongo:latest
+    ports:
+      - "27017:27017" # 27017
+    networks:
+      - BIG-dataplatform-network
+    volumes: # Specify that the `/data` folder **inside** the container is mapped to the volume `mongo-db`
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+    driver_opts:
+      type: nfs
+      o: addr=137.204.74.55,rw,nfsvers=4
+      device: ":/mnt/mysharednfs/dataplatform/mongodb_data/"
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
