@@ -10,6 +10,10 @@ services:
     volumes:
       - geoserver_data:/opt/geoserver_data
       - geoserver_data_dir:/home/geoserver/data
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
 
 volumes:
   geoserver_data:
