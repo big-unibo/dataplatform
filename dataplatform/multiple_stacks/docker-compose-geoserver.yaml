@@ -6,7 +6,7 @@ services:
     networks:
       - BIG-dataplatform-network
     ports:
-      - "80:8080"
+      - 80:8080
     volumes:
       - geoserver_data:/opt/geoserver_data
       - geoserver_data_dir:/home/geoserver/data
@@ -14,18 +14,19 @@ services:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
+          - node.role == worker
 
 volumes:
   geoserver_data:
     driver_opts:
       type: nfs
-      o: addr=137.204.70.156,rw,nfsvers=4
-      device: ":${NFSPATH}/dataplatform/geoserver/data/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver/data/
   geoserver_data_dir:
     driver_opts:
       type: nfs
-      o: addr=137.204.70.156,rw,nfsvers=4
-      device: ":${NFSPATH}/dataplatform/geoserver/data_dir/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver/data_dir/
 
 networks:
   BIG-dataplatform-network:
