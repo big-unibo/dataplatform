@@ -19,12 +19,12 @@ volumes:
   geoserver_data:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
+      o: addr=137.204.70.156,rw,nfsvers=4
       device: ":/mnt/mysharednfs/dataplatform/geoserver/data/"
   geoserver_data_dir:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
+      o: addr=137.204.70.156,rw,nfsvers=4
       device: ":/mnt/mysharednfs/dataplatform/geoserver/data_dir/"
 
 networks:
