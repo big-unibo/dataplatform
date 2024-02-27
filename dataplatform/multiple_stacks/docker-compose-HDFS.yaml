@@ -39,6 +39,7 @@ services:
       placement:
         constraints:
           - node.role == worker
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network 
@@ -69,6 +70,7 @@ services:
       placement:
         constraints:
           - node.role == worker
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_namenode1==0
     networks:
       - BIG-dataplatform-network 
@@ -89,6 +91,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_journal2==0
           - node.labels.running_journal3==0
     networks:
@@ -110,6 +113,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_journal1==0
           - node.labels.running_journal3==0
     networks:
@@ -131,6 +135,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_journal2==0
           - node.labels.running_journal1==0
     networks:
