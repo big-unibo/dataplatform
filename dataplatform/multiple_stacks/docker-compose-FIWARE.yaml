@@ -15,6 +15,10 @@ services:
     # Here, we are launching the OCB with: the possibility to perform "cors" requests, the name of the database, and the maximum payload parameter
     # You can also set the log level by adding `-logLevel DEBUG`
     command: -corsOrigin __ALL -dbhost mongo-db -inReqPayloadMaxSize 5000000
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
 
 
   # Database (orion + persistence)
@@ -27,6 +31,10 @@ services:
       - BIG-dataplatform-network
     volumes: # Specify that the `/data` folder **inside** the container is mapped to the volume `mongo-db`
       - mongodb_data:/data/db
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
 
 volumes:
   mongodb_data:
