@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.25.x
+    networks:
+      - BIG-dataplatform-network
+    ports:
+      - 81:8080
+    volumes:
+      - geoserver_data:/opt/geoserver_data
+      - geoserver_data_dir:/home/geoserver/data
+      - geoserver_conf:/opt/config/
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+          - node.role == worker
+
+volumes:
+  geoserver_data:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver/data
+  geoserver_data_dir:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver/data_dir
+  geoserver_conf:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver_conf/
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
