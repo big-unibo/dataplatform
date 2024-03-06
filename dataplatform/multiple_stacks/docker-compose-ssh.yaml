@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  sshd:
+    image: testcontainers/sshd:1.1.0
+    networks:
+      - BIG-dataplatform-network
+    ports:
+      - 40022:22
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
