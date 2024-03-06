@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  spark-yarn-test-env:
+    image: apache/spark:${SPARKVERSION}
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - HADOOP_CONF_DIR=${SPARKCONFDIR}
+    volumes:
+      - spark_config:${SPARKCONFDIR}
+      - hadoop_config:${HADOOPCONFDIR}
+    stdin_open: true 
+    tty: true
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+        tail -f /dev/null
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network 
+      
+volumes:
+  spark_config:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/spark_conf/"
+        
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network

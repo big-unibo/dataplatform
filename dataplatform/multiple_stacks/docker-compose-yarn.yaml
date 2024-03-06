@@ -15,6 +15,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
 
@@ -31,7 +32,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == worker
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
 
@@ -53,6 +54,7 @@ services:
       placement:
         constraints:
           - node.role == worker
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
 
