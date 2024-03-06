@@ -9,6 +9,6 @@ jobs:
         run: docker swarm init
       - name: Deploy
         run: |
-          cd dataplaform/multiple_stacks
+          cd dataplatform/multiple_stacks
           chmod +x *.sh
           ./deploy-swarm.sh
