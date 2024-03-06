@@ -40,8 +40,8 @@ volumes:
   mongodb_data:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
-      device: ":/mnt/mysharednfs/dataplatform/mongodb_data/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/mongodb_data/
 
 networks:
   BIG-dataplatform-network:

@@ -10,7 +10,6 @@ services:
     volumes:
       - geoserver_data:/opt/geoserver_data
       - geoserver_data_dir:/home/geoserver/data
-      - geoserver_conf:/opt/config/
     deploy:
       placement:
         constraints:
