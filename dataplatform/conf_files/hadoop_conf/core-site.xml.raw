@@ -1,5 +1,0 @@
-io.compression.codecs: org.apache.hadoop.io.compress.SnappyCodec
-fs.defaultFS: hdfs://myhacluster
-hadoop.proxyuser.hue.hosts: *
-hadoop.http.staticuser.user: root
-hadoop.proxyuser.hue.groups: *

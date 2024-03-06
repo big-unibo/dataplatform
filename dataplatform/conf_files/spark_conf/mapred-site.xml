@@ -1,3 +1,0 @@
-<configuration>
-<property><name>mapreduce.jobhistory.webapp.address</name><value>historyserver:19888</value></property>
-</configuration>
