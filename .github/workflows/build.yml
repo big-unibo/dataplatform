@@ -11,4 +11,5 @@ jobs:
         run: |
           cd dataplatform/multiple_stacks
           chmod +x *.sh
+          ./create-network.sh
           ./deploy-swarm.sh
