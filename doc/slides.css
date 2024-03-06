@@ -1,0 +1,61 @@
+<style>
+.slides {
+    font-size: 0.5em;
+}
+
+.reveal ul {
+    display: block;
+}
+
+.reveal ol {
+    display: block;
+}
+
+strong { 
+    color: #E4572E;
+}
+
+em { 
+    color: #3944BC;
+}
+
+img {
+    max-height: 350px !important;
+}
+
+p {
+    text-align: left;
+}
+
+figcaption {
+    font-size: 0.6em !important;
+    font-style: italic !important;
+}
+
+.title {
+    color: #29335C !important;
+}
+
+.h1 {
+    color: #29335C !important;
+}
+
+.h2 {
+    color: #29335C !important;
+}
+
+.subtitle {
+    font-style: italic !important;
+    text-align: center !important;
+    color: #669BBC !important;
+}
+
+.author {
+    text-align: center !important;
+}
+
+.date {
+    font-size: 0.75em !important;
+    text-align: center !important;
+}
+</style>
