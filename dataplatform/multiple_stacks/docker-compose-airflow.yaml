@@ -199,12 +199,12 @@ volumes:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
-      device: ":/mnt/mysharednfs/dataplatform/airflow_postgres_data/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/airflow_postgres_data/"
 
   airflow_data:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
-      device: ":/mnt/mysharednfs/dataplatform/airflow_data/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/airflow_data/"
