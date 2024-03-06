@@ -2,7 +2,6 @@ name: "gen-doc"
 on:
   push:
     branches:
-      - main
       - master
 jobs:
   build:
@@ -23,4 +22,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4.4.3
         with:
           branch: gh-pages
-          folder: _site
+          folder: doc/_site
