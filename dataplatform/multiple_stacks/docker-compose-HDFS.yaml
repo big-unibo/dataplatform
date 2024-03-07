@@ -302,18 +302,6 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: :${NFSPATH}/dataplatform_config/datanode2_data/
-  # datanode3_data:
-  #   driver_opts:
-  #     type: nfs
-  #     o: addr=${NFSADDRESS},rw,nfsvers=4
-  #     device: :${NFSPATH}/dataplatform_config/datanode3_data/
-
-  # datanode4_data:
-  #   driver_opts:
-  #     type: nfs
-  #     o: addr=${NFSADDRESS},rw,nfsvers=4
-  #     device: :${NFSPATH}/dataplatform_config/datanode4_data/
-
 
   hadoop_config:
     driver: local
