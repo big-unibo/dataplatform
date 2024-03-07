@@ -1,7 +1,7 @@
 version: "3.9"
 services:
-  spark-yarn-test-env:
-    image: apache/spark:${SPARKVERSION}
+  spark-client:
+    image: w4bo/spark:1.0.0
     environment:
       - SPARK_NO_DAEMONIZE=true
       - HADOOP_CONF_DIR=${SPARKCONFDIR}
