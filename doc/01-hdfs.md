@@ -1,7 +1,5 @@
-
-
 ---
-Data Platform Documentation"
+Title: "Data Platform Documentation"
 ---
 Services
 1.  Hadoop HDFS, version: 3.3.6
