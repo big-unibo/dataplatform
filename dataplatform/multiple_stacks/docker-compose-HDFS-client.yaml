@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  hdfs-client:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+    command: ["tail", "-f", "/dev/null"]
+    stdin_open: true
+    tty: true
+    deploy:
+      placement:
+        constraints:
+          - node.role != manager
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+volumes:
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
+  
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
