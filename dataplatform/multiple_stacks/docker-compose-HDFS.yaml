@@ -145,6 +145,9 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
     command:
       - /bin/bash
       - -c
@@ -152,6 +155,9 @@ services:
         sleep 30
         sudo mkdir -p ${DATADIR}
         sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
@@ -174,6 +180,9 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
     command:
       - /bin/bash
       - -c
@@ -181,6 +190,10 @@ services:
         sleep 30
         sudo mkdir -p ${DATADIR}
         sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
@@ -203,6 +216,9 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
     command:
       - /bin/bash
       - -c
@@ -210,6 +226,10 @@ services:
         sleep 30
         sudo mkdir -p ${DATADIR}
         sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
@@ -233,6 +253,9 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
     command:
       - /bin/bash
       - -c
@@ -240,6 +263,9 @@ services:
         sleep 30
         sudo mkdir -p ${DATADIR}
         sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
