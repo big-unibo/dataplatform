@@ -29,18 +29,18 @@ services:
         constraints:
           - node.hostname != CB-Mass-Node1
 
-  mosquitto:
-    init: true
-    image: eclipse-mosquitto:2.0.11
-    ports:
-      - "${MOSQUITTO_PORT_EXT}:1883"
-      - "${MOSQUITTO_PORT_EXT_TLS}:8883"
-    volumes:
-      - mqtt-volume/config:/mosquitto/config:ro
-      - mqtt-volume/log:/mosquitto/log
-      - mqtt-volume/data:/mosquitto/data
-    networks:
-      - BIG-dataplatform-network
+  # mosquitto:
+  #   init: true
+  #   image: eclipse-mosquitto:2.0.11
+  #   ports:
+  #     - "${MOSQUITTO_PORT_EXT}:1883"
+  #     - "${MOSQUITTO_PORT_EXT_TLS}:8883"
+  #   volumes:
+  #     - mqtt-volume/config:/mosquitto/config:ro
+  #     - mqtt-volume/log:/mosquitto/log
+  #     - mqtt-volume/data:/mosquitto/data
+  #   networks:
+  #     - BIG-dataplatform-network
 
   # etl:
   #   init: true
