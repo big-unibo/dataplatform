@@ -36,7 +36,7 @@ for arg_name, arg_value in task_arguments.items():
 run_task = DockerOperator(
     task_id='test_python_script',
     container_name='test_1',
-    image='chiaraforresi/test',  # Private Docker image
+    image='chiaraforresi/test:v0.0.1',  # Private Docker image
     command=command,  # Command to run in the Docker container
     docker_conn_id='docker_hub_chiaraforresi',  # Connection ID for Docker Hub
     dag=dag,
