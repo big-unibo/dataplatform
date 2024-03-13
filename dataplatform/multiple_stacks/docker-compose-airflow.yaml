@@ -101,6 +101,7 @@ services:
         constraints:
           - node.hostname != CB-Mass-Node1
 
+  #https://stackoverflow.com/questions/69316093/how-to-add-new-user-to-docker-image-when-running-distributed-airflow-architectur
   docker-proxy:
     image: bobrik/socat
     command: "TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock"
