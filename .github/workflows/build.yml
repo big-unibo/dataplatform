@@ -1,0 +1,15 @@
+name: "build"
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up a swarm with a single node
+        run: docker swarm init
+      - name: Deploy
+        run: |
+          cd dataplatform/multiple_stacks
+          chmod +x *.sh
+          ./create-network.sh
+          ./deploy-swarm.sh

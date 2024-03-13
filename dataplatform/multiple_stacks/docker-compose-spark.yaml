@@ -18,7 +18,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
 
@@ -36,10 +36,9 @@ services:
         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
         /opt/spark/sbin/start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}
     deploy:
-      replicas: 1
       placement:
         constraints:
-          - node.role == worker
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
 
@@ -67,23 +66,24 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == worker
+          - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
-
+      
 volumes:
   spark_config:
+    driver: local
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
-      device: ":/mnt/mysharednfs/dataplatform/spark_conf/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/spark_conf/"
         
   hadoop_config:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
-      device: ":/mnt/mysharednfs/dataplatform/hadoop_conf/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
 
 networks:
   BIG-dataplatform-network:

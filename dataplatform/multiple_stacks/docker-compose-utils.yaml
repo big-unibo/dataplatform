@@ -76,33 +76,33 @@ volumes:
   spark_config:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
-      device: ":/mnt/mysharednfs/dataplatform/spark_conf/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: ":${NFSPATH}/dataplatform_config/spark_conf/"
         
   hadoop_config:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4,nolock,hard
-      device: ":/mnt/mysharednfs/dataplatform/hadoop_conf/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
 
   oozie_config:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/oozie_config/
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/oozie_config/
 
   oozie_db:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/oozie_db/
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/oozie_db/
 
   test_files:
     driver_opts:
       type: nfs
-      o: addr=137.204.74.55,rw,nfsvers=4
-      device: :/mnt/mysharednfs/dataplatform/tests/
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/tests/
 
 networks:
   BIG-dataplatform-network:
