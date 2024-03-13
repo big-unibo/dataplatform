@@ -1,47 +1,134 @@
 version: "3.9"
 services:
-
-  # Orion is the context broker
   orion:
     init: true
-    image: fiware/orion:latest              # This variable `${ORION_VERSION}` is drawn from the `.env` file
+    image: fiware/orion:3.13.0-PRE-493 
     depends_on:
-      - mongo-db                           # Create the `mongo-db` before this container
+      - mongo-db
     networks:
       - BIG-dataplatform-network
     ports:
-      - "8082:1026"  # Map a local port to a container's port (e.g., `IP:8082` to `IP:1026`)
-    # Append this string to the final command that is executed by the container
-    # Here, we are launching the OCB with: the possibility to perform "cors" requests, the name of the database, and the maximum payload parameter
-    # You can also set the log level by adding `-logLevel DEBUG`
+      - "${FIWARE_PORT}:1026"
     command: -corsOrigin __ALL -dbhost mongo-db -inReqPayloadMaxSize 5000000
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
 
-
-  # Database (orion + persistence)
   mongo-db:
     init: true
     image: mongo:latest
     ports:
-      - "27017:27017" # 27017
+      - "${MONGODB_PORT}:27017"
     networks:
       - BIG-dataplatform-network
-    volumes: # Specify that the `/data` folder **inside** the container is mapped to the volume `mongo-db`
-      - mongodb_data:/data/db
+    # volumes:
+    #   - mongodb_volume:/data/db
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
 
+  mosquitto:
+    init: true
+    image: eclipse-mosquitto:2.0.11
+    hostname: mosquitto
+    container_name: mosquitto
+    ports:
+      - "${MOSQUITTO_PORT_EXT}:1883"
+      - "${MOSQUITTO_PORT_EXT_TLS}:8883"
+    volumes:
+      - mqtt-volume/config:/mosquitto/config:ro
+      - mqtt-volume/log:/mosquitto/log
+      - mqtt-volume/data:/mosquitto/data
+    networks:
+      - BIG-dataplatform-network
+
+  # etl:
+  #   init: true
+  #   hostname: etl
+  #   image: ${SWARM_REGISTER_IP}:${SWARM_REGISTER_PORT}/etl
+  #   build: ./etl
+  #   container_name: etl
+  #   ports:
+  #     - "${DRACO_PORT_EXT}:${DRACO_PORT_EXT}"
+  #   networks:
+  #     - BIG-dataplatform-network
+  #   healthcheck:
+  #     test: |
+  #       curl --fail -H 'Content-Type: application/json' -d '{"heartbeat": ""}' -s http://localhost:${DRACO_PORT_EXT}
+  #     interval: 5s
+  #     timeout: 10s
+
+  # writetomongo:
+  #   init: true
+  #   hostname: writetomongo
+  #   image: ${SWARM_REGISTER_IP}:${SWARM_REGISTER_PORT}/writetomongo
+  #   build:
+  #     context: ./devices
+  #     dockerfile: writetomongo.Dockerfile
+  #   container_name: writetomongo
+  #   networks:
+  #     - BIG-dataplatform-network
+  #   depends_on:
+  #     - mongo-db
+
+  fileserver:
+    init: true
+    image: jetbrainsinfra/nginx-file-listing:0.2
+    ports:
+      - "${FILESERVER_PORT}:80"
+    volumes:
+      - dataset-volume:/mnt/data
+    networks:
+      - BIG-dataplatform-network
+
+  ftp:
+    init: true
+    image: stilliard/pure-ftpd
+    environment:
+      FTP_USER_NAME: "${FTP_USER}"
+      FTP_USER_PASS: "${FTP_PWD}"
+      FTP_USER_HOME: "/data"
+      FTP_PASSIVE_PORTS: "${FTP_PORT_MIN}:${FTP_PORT_MAX}"
+      FTP_MAX_CLIENTS: 50
+      FTP_MAX_CONNECTIONS: 20
+      ADDED_FLAGS: "-d -d"
+      PUBLICHOST: "${FTP_IP}"
+    volumes:
+      - ftp-volume:/data
+    ports:
+      - "${FTP_PORT_FTP20_EXT}:20"
+      - "${FTP_PORT_FTP21_EXT}:21"
+      - "${FTP_PORT_MIN}-${FTP_PORT_MAX}:${FTP_PORT_MIN}-${FTP_PORT_MAX}/tcp"
+    networks:
+      - BIG-dataplatform-network
+
 volumes:
-  mongodb_data:
+
+  # mqtt-volume:
+  #   driver_opts:
+  #     type: nfs
+  #     o: addr=${NFSADDRESS},rw,nfsvers=4
+  #     device: ":${NFSPATH}/mqtt-mosquitto/"
+
+  ftp-volume:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: ":${NFSPATH}/dataplatform_config/mongodb_data/"
+      device: ":${NFSPATH}/ftp/"
+
+  dataset-volume:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: ":${NFSPATH}/datasets/"
+
+  mongodb_volume:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: ":${NFSPATH}/mongodb-data/"
 
 networks:
   BIG-dataplatform-network:
