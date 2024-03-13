@@ -55,7 +55,6 @@ x-airflow-common:
     _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
   volumes:
     - airflow_data:/opt/airflow/
-    #- ${JAVA_HOME}:/usr/local/bin/java #TODO fix this
   user: "${AIRFLOW_UID:-50000}:0"
   deploy:
     placement:
