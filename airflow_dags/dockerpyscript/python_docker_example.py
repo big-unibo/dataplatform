@@ -26,7 +26,7 @@ task = DockerOperator (
     task_id='docker_task',
     image='python:3.9-slim', # Use the Python 3.9 image
     command='echo "Hello, World Docker container!"', # If there is an entrypoint in the Dockerfile, it will be overridden by this command
-    docker_url='unix://var/run/docker.sock', # The connection to the Docker daemon, the socket should exist in the container
+    docker_url='tcp://docker-proxy:2375', # The connection to the Docker daemon, the socket should exist in the container
     network_mode='bridge', # The network mode for the container (internal network), if use "host" the container will share the host network
     dag=dag
 )

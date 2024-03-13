@@ -29,11 +29,12 @@ task_arguments = {
 # Define your DockerOperator
 run_task = DockerOperator(
     task_id='test_python_script',
+    container_name='test_1',
     image='chiaraforresi/test',  # Private Docker image
-    command='python_script.py --name-argument ' + task_arguments['name_argument'],  # Command to run in the Docker container
+    command='python python_script.py --name-argument ' + task_arguments['name_argument'],  # Command to run in the Docker container
     docker_conn_id='docker_hub_chiaraforresi',  # Connection ID for Docker Hub
     dag=dag,
-    docker_url='unix://var/run/docker.sock', # The connection to the Docker daemon, the socket should exist in the container
+    docker_url='tcp://docker-proxy:2375', # The connection to the Docker daemon, the socket should exist in the container
     network_mode='bridge', # The network mode for the container (internal network), if use "host" the container will share the host network
 )
 
