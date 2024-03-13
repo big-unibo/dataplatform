@@ -25,13 +25,19 @@ dag = DAG(
 task_arguments = {
     'name_argument': 'Chiara'
 }
+# Initialize the command string
+command = "python python_script.py"
+
+# Add each argument to the command string
+for arg_name, arg_value in task_arguments.items():
+    command += f" --{arg_name.replace('_', '-')} {arg_value}"
 
 # Define your DockerOperator
 run_task = DockerOperator(
     task_id='test_python_script',
     container_name='test_1',
     image='chiaraforresi/test',  # Private Docker image
-    command='python python_script.py --name-argument ' + task_arguments['name_argument'],  # Command to run in the Docker container
+    command=command,  # Command to run in the Docker container
     docker_conn_id='docker_hub_chiaraforresi',  # Connection ID for Docker Hub
     dag=dag,
     docker_url='tcp://docker-proxy:2375', # The connection to the Docker daemon, the socket should exist in the container
