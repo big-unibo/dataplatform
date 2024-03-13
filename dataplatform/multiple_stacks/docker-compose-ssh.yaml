@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  sshd:
+    image: w4bo/sshd:1.0.3
+    networks:
+      - BIG-dataplatform-network
+    ports:
+      - 40022:22
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - sshd_data:/home/dev/.ssh
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+          - node.role == manager
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
+
+volumes:
+  sshd_data:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/sshd/
