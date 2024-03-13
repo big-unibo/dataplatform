@@ -17,8 +17,9 @@
 - api_version='auto', to use the latest version of the docker api
 - container_name='name_of_task'
 
-# Schedule
+# Some doc
 - https://airflow.apache.org/docs/apache-airflow/1.10.1/scheduler.html
+- https://airflow.apache.org/docs/apache-airflow-providers-docker/1.0.2/_api/airflow/providers/docker/operators/docker/index.html
 # Use docker images on docker hub
 docker build -t my_image .
 docker tag my_image chiaraforresi/test:v0.0.1
@@ -27,8 +28,4 @@ docker push chiaraforresi/test:v0.0.1
 
 set up a docker connection from the UI to docker with username and password for Docker Hub
 - registry: registry.hub.docker.com
-
-# Spark 
-Si deve installare il [provider di spark](https://airflow.apache.org/docs/apache-airflow-providers-apache-spark/stable/index.html)
-need to set the java home in airflow
-
+- registry può essere il registry locale: https://www.frakkingsweet.com/create-your-own-docker-registry/
