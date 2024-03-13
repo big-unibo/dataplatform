@@ -29,3 +29,5 @@ Errore sui permessi di docker
 
 # Spark 
 Si deve installare il [provider di spark](https://airflow.apache.org/docs/apache-airflow-providers-apache-spark/stable/index.html)
+need to set the java home in airflow
+

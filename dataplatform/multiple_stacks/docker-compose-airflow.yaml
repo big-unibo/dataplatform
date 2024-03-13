@@ -47,14 +47,14 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-docker apache-airflow-providers-apache-spark}
     _AIRFLOW_DB_MIGRATE: 'true'
     _AIRFLOW_WWW_USER_CREATE: 'false'
     _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
     _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
   volumes:
     - airflow_data:/opt/airflow/
-    - /var/run/docker.sock:/var/run/docker.sock
+    #- ${JAVA_HOME}:/usr/local/bin/java #TODO fix this
   user: "${AIRFLOW_UID:-50000}:0"
   deploy:
     placement:
@@ -96,6 +96,20 @@ services:
       start_period: 30s
     networks:
       - BIG-dataplatform-network 
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+
+  docker-proxy:
+    image: bobrik/socat
+    command: "TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock"
+    ports:
+      - 2375:2375
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - BIG-dataplatform-network
     deploy:
       placement:
         constraints:
