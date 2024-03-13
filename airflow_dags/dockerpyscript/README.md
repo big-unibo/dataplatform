@@ -18,8 +18,45 @@
 - container_name='name_of_task'
 
 # Some doc
+- https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html
 - https://airflow.apache.org/docs/apache-airflow/1.10.1/scheduler.html
 - https://airflow.apache.org/docs/apache-airflow-providers-docker/1.0.2/_api/airflow/providers/docker/operators/docker/index.html
+
+# Trigger dag from python application
+
+```python
+from airflow.api.client.local_client import Client
+
+c = Client(None, None)
+c.trigger_dag(dag_id='test_dag_id', run_id='test_run_id', conf={})
+```
+
+Dove dentro conf passo i parametri al dag
+
+```python
+from airflow.decorators import dag, task
+from airflow.utils.dates import days_ago
+
+@dag(schedule_interval=None, start_date=None)
+def my_dag():
+    
+    @task
+    def process_data(**kwargs):
+        # Access configuration values from the context
+        conf = kwargs['dag_run'].conf
+        key1_value = conf['key1']
+        key2_value = conf['key2']
+        
+        # Use the configuration values as needed
+        print(f"Configuration key1 value: {key1_value}")
+        print(f"Configuration key2 value: {key2_value}")
+
+    process_data()
+
+dag = my_dag()
+```
+
+
 # Use docker images on docker hub
 docker build -t my_image .
 docker tag my_image chiaraforresi/test:v0.0.1
