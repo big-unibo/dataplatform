@@ -171,6 +171,9 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
     networks:
@@ -207,6 +210,9 @@ services:
           - node.labels.running_datanode1==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
     networks:
@@ -242,6 +248,9 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode1==0
           - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
@@ -278,6 +287,123 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode1==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+  datanode5:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          #exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+  datanode6:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          #exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+  datanode7:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          #exit 2
+        fi
+        hdfs --config /opt/hadoop/etc/hadoop datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1

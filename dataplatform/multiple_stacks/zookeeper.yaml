@@ -14,6 +14,7 @@ services:
     deploy:
       placement:
         constraints:
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_zoo2==0
           - node.labels.running_zoo3==0
 
@@ -33,6 +34,9 @@ services:
         constraints:
           - node.labels.running_zoo1==0
           - node.labels.running_zoo3==0
+          - node.hostname != CB-Mass-Node1
+
+
 
   zoo3:
     image: zookeeper:${ZOOKEEPERVERSION}
@@ -48,6 +52,7 @@ services:
     deploy:
       placement:
         constraints:
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_zoo1==0
           - node.labels.running_zoo2==0
 

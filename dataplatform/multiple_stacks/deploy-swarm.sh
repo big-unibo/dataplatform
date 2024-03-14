@@ -18,9 +18,9 @@ fi
 for stack in $files_matching_criteria
 do
     stack="${stack%.yaml}"
-    stack="${stack#./docker-compose-}"
+    stack="${stack#./}"
     # Altrimenti, effettua la sostituzione delle variabili di ambiente
-    envsubst < "docker-compose-${stack}.yaml" > "runtime/docker-compose-${stack}-subs.yaml"
+    envsubst < "${stack}.yaml" > "runtime/${stack}-subs.yaml"
     # Deploya lo stack
-    docker stack deploy -c "runtime/docker-compose-${stack}-subs.yaml" "DataPlatform-${stack}"
+    docker stack deploy -c "runtime/${stack}-subs.yaml" "${ENVIRONMENTNAME}-${stack}"
 done
