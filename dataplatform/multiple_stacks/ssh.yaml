@@ -6,7 +6,7 @@ services:
     networks:
       - BIG-dataplatform-network
     ports:
-      - 40022:22
+      - ${SSHSERVERPORTEXT}:${SSHSERVERPORT}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - sshd_data:/home/dev/.ssh
