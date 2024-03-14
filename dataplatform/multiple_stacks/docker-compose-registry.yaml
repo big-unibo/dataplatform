@@ -6,7 +6,7 @@ services:
     networks:
       - BIG-dataplatform-network
     ports:
-      - "${DOCKERREGISTRYPORT}:${DOCKERREGISTRYPORT}"
+      - ${DOCKERREGISTRYPORT}:${DOCKERREGISTRYPORT}
     environment:
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
     volumes:
