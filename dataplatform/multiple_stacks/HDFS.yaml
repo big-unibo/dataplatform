@@ -3,7 +3,7 @@ services:
   namenode1:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - ${NAMENODEPORT}:${NAMENODEPORT}
+      - ${NAMENODE1PORT}:${NAMENODE1PORT}
     volumes:
       - namenode1_data:${NAMEDIR}
       - namenode1_config:${HADOOPCONFDIR}
@@ -26,7 +26,7 @@ services:
 
         if [ "`ls -A ${NAMEDIR}`" == "" ]; then
           echo "Formatting namenode name directory: ${NAMEDIR}"
-          /opt/hadoop/bin/hdfs --config /opt/hadoop/etc/hadoop namenode -format -y ${CLUSTERNAME}
+          ${HADOOPHOME}hdfs --config ${HADOOPCONFDIR} namenode -format -y ${CLUSTERNAME}
         else
           echo "${NAMEDIR} exists!"
         fi
@@ -34,7 +34,7 @@ services:
         echo "Done formatting ZK ... starting zkfc"
         hdfs --daemon start zkfc > zkfc_logs.txt
         echo "Started zkfc"
-        hdfs --config /opt/hadoop/etc/hadoop namenode
+        hdfs --config ${HADOOPCONFDIR} namenode
     deploy:
       placement:
         constraints:
@@ -60,12 +60,12 @@ services:
         sudo chown hadoop ${NAMEDIR}
         if [ "`ls -A ${NAMEDIR}`" == "" ]; then
           echo "Bootstrappppppping namenode2"
-          /opt/hadoop/bin/hdfs namenode -bootstrapStandby
+          ${HADOOPHOME}hdfs namenode -bootstrapStandby
         fi
         echo "starting zkfc"
         hdfs --daemon start zkfc > zkfc_logs.txt
         echo "Started zkfc"
-        hdfs --config /opt/hadoop/etc/hadoop namenode
+        hdfs --config ${HADOOPCONFDIR} namenode
     deploy:
       placement:
         constraints:
@@ -162,7 +162,7 @@ services:
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
         fi
-        hdfs --config /opt/hadoop/etc/hadoop datanode
+        hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
@@ -171,6 +171,9 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
     networks:
@@ -198,7 +201,7 @@ services:
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
         fi
-        hdfs --config /opt/hadoop/etc/hadoop datanode
+        hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
@@ -207,6 +210,9 @@ services:
           - node.labels.running_datanode1==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
     networks:
@@ -234,7 +240,7 @@ services:
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
         fi
-        hdfs --config /opt/hadoop/etc/hadoop datanode
+        hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
@@ -242,6 +248,9 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode1==0
           - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
@@ -270,7 +279,7 @@ services:
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
         fi
-        hdfs --config /opt/hadoop/etc/hadoop datanode
+        hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
@@ -278,6 +287,123 @@ services:
           - node.labels.running_datanode2==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode1==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+  datanode5:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          #exit 2
+        fi
+        hdfs --config ${HADOOPCONFDIR} datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+  datanode6:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          #exit 2
+        fi
+        hdfs --config ${HADOOPCONFDIR} datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+  datanode7:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+      - ${DATANODEDISK3}:${DATANODEDIR3}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        sudo chown hadoop ${DATANODEDIR3}
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          #exit 2
+        fi
+        hdfs --config ${HADOOPCONFDIR} datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
