@@ -9,7 +9,7 @@ services:
       - ${DOCKERREGISTRYPORT}:${DOCKERREGISTRYPORT}
     environment:
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
-      REGISTRY_HTTP_ADDR: 0.0.0.0:5000
+      #REGISTRY_HTTP_ADDR: 0.0.0.0:5000
     volumes:
       - docker_registry_data:/data
     deploy:
