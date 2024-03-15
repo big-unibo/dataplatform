@@ -23,7 +23,7 @@ volumes:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: :${NFSPATH}/dataplatform_config/docker_registry/data
+      device: :${NFSPATH}/dataplatform_config/docker_registry
 
 networks:
   BIG-dataplatform-network:
