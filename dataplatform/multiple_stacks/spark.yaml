@@ -14,7 +14,7 @@ services:
       - -c
       - |
         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
-        /opt/spark/sbin/start-master.sh
+        ${SPARKBIN}start-master.sh
     deploy:
       placement:
         constraints:
@@ -34,7 +34,7 @@ services:
       - -c
       - |
         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
-        /opt/spark/sbin/start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}
+        ${SPARKBIN}start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}
     deploy:
       placement:
         constraints:
@@ -62,7 +62,7 @@ services:
           exit 2
         fi
         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
-        /opt/spark/sbin/start-history-server.sh
+        ${SPARKBIN}start-history-server.sh
     deploy:
       placement:
         constraints:
