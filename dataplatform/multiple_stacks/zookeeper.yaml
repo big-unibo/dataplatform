@@ -3,10 +3,10 @@ services:
   zoo1:
     image: zookeeper:${ZOOKEEPERVERSION}
     ports:
-      - 2181:2181
+      - ${ZOO1PORT}:${ZOOPORTEXT}
     environment:
       ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_SERVERS: server.1=0.0.0.0:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT} server.2=zoo2:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT} server.3=zoo3:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT}
     volumes:
       - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
     networks:
@@ -14,16 +14,17 @@ services:
     deploy:
       placement:
         constraints:
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_zoo2==0
           - node.labels.running_zoo3==0
 
   zoo2:
     image: zookeeper:${ZOOKEEPERVERSION}
     ports:
-      - 2182:2181
+      - ${ZOO2PORT}:${ZOOPORTEXT}
     environment:
       ZOO_MY_ID: 2
-      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_SERVERS: server.1=zoo1:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT} server.2=0.0.0.0:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT} server.3=zoo3:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT}
     volumes:
       - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
     networks:
@@ -33,14 +34,17 @@ services:
         constraints:
           - node.labels.running_zoo1==0
           - node.labels.running_zoo3==0
+          - node.hostname != CB-Mass-Node1
+
+
 
   zoo3:
     image: zookeeper:${ZOOKEEPERVERSION}
     ports:
-      - 2183:2181
+      - ${ZOO3PORT}:${ZOOPORTEXT}
     environment:
       ZOO_MY_ID: 3
-      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+      ZOO_SERVERS: server.1=zoo1:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT} server.2=zoo2:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT} server.3=0.0.0.0:${ZOOELECTIONPORT}:${ZOODATAPORT};${ZOOPORTEXT}
     volumes:
       - hadoop_zoo_config:/apache-zookeeper-3.9.1-bin/conf/
     networks:
@@ -48,6 +52,7 @@ services:
     deploy:
       placement:
         constraints:
+          - node.hostname != CB-Mass-Node1
           - node.labels.running_zoo1==0
           - node.labels.running_zoo2==0
 

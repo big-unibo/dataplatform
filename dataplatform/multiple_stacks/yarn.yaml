@@ -10,7 +10,7 @@ services:
       - /bin/bash
       - -c
       - |
-        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop resourcemanager
+        ${HADOOPHOME}yarn --config ${HADOOPCONFDIR} resourcemanager
     deploy:
       placement:
         constraints:
@@ -27,7 +27,7 @@ services:
       - /bin/bash
       - -c
       - |
-        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop nodemanager
+        ${HADOOPHOME}yarn --config ${HADOOPCONFDIR} nodemanager
     deploy:
       replicas: 1
       placement:
@@ -39,7 +39,7 @@ services:
   historyserver:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
-      - hadoop_historyserver:/hadoop/yarn/timeline
+      - hadoop_historyserver:${YARNHISTSERVERDATADIR}
       - hadoop_config:${HADOOPCONFDIR}
     ports:
       - ${YARNHISTSERVERPORT}:${YARNHISTSERVERPORT}
@@ -47,9 +47,9 @@ services:
       - /bin/bash
       - -c
       - |
-        mkdir -p /hadoop/yarn/timeline
-        sudo chown hadoop /hadoop/yarn/timeline
-        /opt/hadoop/bin/yarn --config /opt/hadoop/etc/hadoop historyserver
+        mkdir -p ${YARNHISTSERVERDATADIR}
+        sudo chown hadoop ${YARNHISTSERVERDATADIR}
+        ${HADOOPHOME}yarn --config ${HADOOPCONFDIR} historyserver
     deploy:
       placement:
         constraints:

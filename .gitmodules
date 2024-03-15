@@ -1,0 +1,3 @@
+[submodule "dataplatform/external_stacks/docker-fiware-ext"]
+	path = dataplatform/external_stacks/docker-fiware-ext
+	url = git@github.com:w4bo/docker-fiware-ext.git
