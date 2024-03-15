@@ -2,22 +2,22 @@ version: "3.9"
 services:
   orion:
     init: true
-    image: fiware/orion:3.13.0-PRE-493 
+    image: fiware/orion:3.10.1
     depends_on:
-      - mongo-db
+      - mongodb
     networks:
       - BIG-dataplatform-network
     ports:
       - "${FIWARE_PORT}:1026"
-    command: -corsOrigin __ALL -dbhost mongo-db -inReqPayloadMaxSize 5000000
+    command: -corsOrigin __ALL -dbhost mongodb -inReqPayloadMaxSize 5000000
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
 
-  mongo-db:
+  mongodb:
     init: true
-    image: mongo:latest
+    image: mongo:6.0
     ports:
       - "${MONGODB_PORT}:27017"
     networks:
@@ -67,7 +67,7 @@ services:
   #   networks:
   #     - BIG-dataplatform-network
   #   depends_on:
-  #     - mongo-db
+  #     - mongodb
 
   fileserver:
     init: true
