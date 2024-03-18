@@ -10,8 +10,8 @@ services:
     ports:
       - 81:8080
     volumes:
-      - geoserver_data:/opt/geoserver_data
-      - geoserver_data_dir:/home/geoserver/data
+      - geoserver_data_dir:/opt/geoserver_data
+      - geoserver_data:/home/geoserver/data
     deploy:
       placement:
         constraints:
