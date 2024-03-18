@@ -3,6 +3,8 @@ version: '3.9'
 services:
   geoserver:
     image: docker.osgeo.org/geoserver:2.25.x
+    environment:
+      SKIP_DEMO_DATA: true
     networks:
       - BIG-dataplatform-network
     ports:
@@ -27,11 +29,11 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: :${NFSPATH}/dataplatform_config/geoserver/data_dir
-  geoserver_conf:
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: :${NFSPATH}/dataplatform_config/geoserver_conf/
+  #geoserver_conf:
+  #  driver_opts:
+  #    type: nfs
+  #    o: addr=${NFSADDRESS},rw,nfsvers=4
+  #    device: :${NFSPATH}/dataplatform_config/geoserver_conf/
 
 networks:
   BIG-dataplatform-network:

@@ -57,6 +57,10 @@ dag = my_dag()
 ```
 
 
+# Use local docker registry at 127.0.0.0:5000
+- remove from docker registry:
+  - registry garbage-collect -m /etc/docker/registry/config.yml
+
 # Use docker images on docker hub
 docker build -t my_image .
 docker tag my_image chiaraforresi/test:v0.0.1
