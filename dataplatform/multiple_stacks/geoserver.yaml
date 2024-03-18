@@ -4,7 +4,7 @@ services:
   geoserver:
     image: docker.osgeo.org/geoserver:2.25.x
     environment:
-      SKIP_DEMO_DATA: true
+      SKIP_DEMO_DATA: "true"
     networks:
       - BIG-dataplatform-network
     ports:
