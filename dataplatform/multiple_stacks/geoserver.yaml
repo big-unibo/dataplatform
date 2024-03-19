@@ -5,12 +5,9 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
-      #- ./geoserver-hdfs-client-script.sh:/opt/hadoop/geoserver-hdfs-client-script.sh
+      - ./geoserver-hdfs-client-script.sh:/opt/hadoop/geoserver-hdfs-client-script.sh
       - /mnt/disk1/geoserver_data:/geoserver_data
-    #TODO command: ["geoserver-hdfs-client-script.sh"]
-    command: [ "tail", "-f", "/dev/null" ]
-    stdin_open: true
-    tty: true
+    command: ["geoserver-hdfs-client-script.sh"]
     deploy:
       placement:
         constraints:
