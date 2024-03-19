@@ -5,41 +5,15 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
-    command:
-      - /bin/bash
-      - -c
-      - |
-        sleep 20
-        sudo yum install -y openssh-clients
-        hdfs dfs -get /geoserver-data . 2> /tmp/hdfs_error.log
-        if [ $? -ne 0 ]; then
-          echo "Error occurred while getting data from HDFS geoserver-data folder"
-          exit 1
-        fi
-        echo "End to get data from HDFS geoserver-data folder"
-        sleep 600
-        count=0
-        while ! ping -c 1 geoserver &> /dev/null && [ $count -lt 100000 ]; do
-          echo "Geoserver container is not reachable, retrying in 10 seconds..."
-          sleep 10
-          count=$((count+1))
-        done
-        if [ $count -eq 100000 ]; then
-          echo "Reached maximum retry limit, exiting..."
-          exit 1
-        fi
-        echo "Geoserver container is reachable, proceeding with scp command"
-        scp -r geoserver-data/data/* geoserver:/home/geoserver/data 2> /tmp/scp_error.log
-        if [ $? -ne 0 ]; then
-          echo "Error occurred while copying data to geoserver container"
-          exit 1
-        fi
-        echo "End scp data to geoserver container"
+      - ./geoserver-hdfs-client-script.sh:/opt/hadoop/geoserver-hdfs-client-script.sh
+      - /geoserver_data:/geoserver_data
+    #TODO command: ["geoserver-hdfs-client-script.sh"]
     deploy:
       placement:
         constraints:
           - node.role != manager
           - node.hostname != CB-Mass-Node1
+          - node.labels.running_geoserver==1 #run in the same machine
     networks:
       - BIG-dataplatform-network
 
@@ -53,6 +27,7 @@ services:
       - ${GEOSERVER_PORT}:8080
     volumes:
       - geoserver_data_dir:/opt/geoserver_data
+      - /geoserver_data:/home/geoserver/data
     deploy:
       placement:
         constraints:
