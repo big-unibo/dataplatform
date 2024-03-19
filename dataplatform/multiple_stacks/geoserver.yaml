@@ -1,6 +1,25 @@
 version: '3.9'
 
 services:
+  hdfs-client:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 20
+        hdfs dfs -get /geoserver-data .
+        scp -r data/* geoserver:/home/geoserver/data
+    deploy:
+      placement:
+        constraints:
+          - node.role != manager
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
   geoserver:
     image: docker.osgeo.org/geoserver:2.25.x
     environment:
@@ -11,7 +30,6 @@ services:
       - ${GEOSERVER_PORT}:8080
     volumes:
       - geoserver_data_dir:/opt/geoserver_data
-      - geoserver_data:/home/geoserver/data
     deploy:
       placement:
         constraints:
@@ -19,11 +37,12 @@ services:
           - node.role == worker
 
 volumes:
-  geoserver_data:
+  hadoop_config:
+    driver: local
     driver_opts:
       type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: :${NFSPATH}/dataplatform_config/geoserver/data
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
   geoserver_data_dir:
     driver_opts:
       type: nfs
