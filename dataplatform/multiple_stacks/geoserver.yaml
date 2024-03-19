@@ -6,7 +6,7 @@ services:
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
       - ./geoserver-hdfs-client-script.sh:/opt/hadoop/geoserver-hdfs-client-script.sh
-      - /geoserver_data:/geoserver_data
+      - /mnt/disk1/geoserver_data:/geoserver_data
     #TODO command: ["geoserver-hdfs-client-script.sh"]
     command: [ "tail", "-f", "/dev/null" ]
     stdin_open: true
@@ -30,12 +30,13 @@ services:
       - ${GEOSERVER_PORT}:8080
     volumes:
       - geoserver_data_dir:/opt/geoserver_data
-      - /geoserver_data:/home/geoserver/data
+      - /mnt/disk1/geoserver_data:/home/geoserver/data
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
           - node.role == worker
+          - node.labels.running_geoserver==1 #run in the same machine
 
 volumes:
   hadoop_config:
