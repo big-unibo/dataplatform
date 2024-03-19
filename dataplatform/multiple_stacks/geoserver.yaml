@@ -1,22 +1,6 @@
 version: '3.9'
 
 services:
-  hdfs-client:
-    image: apache/hadoop:${HADOOPVERSION}
-    volumes:
-      - hadoop_config:${HADOOPCONFDIR}
-      - geoserver_conf:/opt/hadoop/script
-      - /mnt/disk1/geoserver_data:/geoserver_data
-    command: ["script/geoserver-hdfs-client-script.sh"]
-    deploy:
-      placement:
-        constraints:
-          - node.role != manager
-          - node.hostname != CB-Mass-Node1
-          - node.labels.running_geoserver==1 #run in the same machine
-    networks:
-      - BIG-dataplatform-network
-
   geoserver:
     image: docker.osgeo.org/geoserver:2.25.x
     environment:
@@ -27,31 +11,29 @@ services:
       - ${GEOSERVER_PORT}:8080
     volumes:
       - geoserver_data_dir:/opt/geoserver_data
-      - /mnt/disk1/geoserver_data:/home/geoserver/data
+      - geoserver_data:/home/geoserver/data
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
           - node.role == worker
-          - node.labels.running_geoserver==1 #run in the same machine
 
 volumes:
-  hadoop_config:
-    driver: local
+  geoserver_data:
     driver_opts:
       type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver/data
   geoserver_data_dir:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: :${NFSPATH}/dataplatform_config/geoserver/data_dir
-  geoserver_conf:
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: :${NFSPATH}/dataplatform_config/geoserver_conf/
+  #geoserver_conf:
+  #  driver_opts:
+  #    type: nfs
+  #    o: addr=${NFSADDRESS},rw,nfsvers=4
+  #    device: :${NFSPATH}/dataplatform_config/geoserver_conf/
 
 networks:
   BIG-dataplatform-network:
