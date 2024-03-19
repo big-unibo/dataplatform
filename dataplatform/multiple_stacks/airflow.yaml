@@ -224,12 +224,6 @@ networks:
     name: BIG-dataplatform-network
 
 volumes:
-  postgres_db_data:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/dataplatform_config/airflow_postgres_data/"
 
   airflow_data:
     driver: local
