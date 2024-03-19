@@ -5,7 +5,7 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
-      - geoserver_conf:/opt/hadoop/script/geoserver-hdfs-client-script.sh
+      - geoserver_conf:/opt/hadoop/script
       - /mnt/disk1/geoserver_data:/geoserver_data
     command: ["script/geoserver-hdfs-client-script.sh"]
     deploy:
