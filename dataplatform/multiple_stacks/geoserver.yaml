@@ -5,9 +5,9 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
-      - ./geoserver-hdfs-client-script.sh:/opt/hadoop/geoserver-hdfs-client-script.sh
+      - geoserver_conf:/opt/hadoop/script/geoserver-hdfs-client-script.sh
       - /mnt/disk1/geoserver_data:/geoserver_data
-    command: ["geoserver-hdfs-client-script.sh"]
+    command: ["script/geoserver-hdfs-client-script.sh"]
     deploy:
       placement:
         constraints:
@@ -47,11 +47,11 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: :${NFSPATH}/dataplatform_config/geoserver/data_dir
-  #geoserver_conf:
-  #  driver_opts:
-  #    type: nfs
-  #    o: addr=${NFSADDRESS},rw,nfsvers=4
-  #    device: :${NFSPATH}/dataplatform_config/geoserver_conf/
+  geoserver_conf:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver_conf/
 
 networks:
   BIG-dataplatform-network:
