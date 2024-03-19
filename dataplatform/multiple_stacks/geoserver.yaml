@@ -8,6 +8,9 @@ services:
       - ./geoserver-hdfs-client-script.sh:/opt/hadoop/geoserver-hdfs-client-script.sh
       - /geoserver_data:/geoserver_data
     #TODO command: ["geoserver-hdfs-client-script.sh"]
+    command: [ "tail", "-f", "/dev/null" ]
+    stdin_open: true
+    tty: true
     deploy:
       placement:
         constraints:
