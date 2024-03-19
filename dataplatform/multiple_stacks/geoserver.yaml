@@ -8,7 +8,7 @@ services:
     networks:
       - BIG-dataplatform-network
     ports:
-      - 40111:8080
+      - ${GEOSERVER_PORT}:8080
     volumes:
       - geoserver_data_dir:/opt/geoserver_data
       - geoserver_data:/home/geoserver/data
