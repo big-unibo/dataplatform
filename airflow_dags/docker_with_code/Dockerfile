@@ -10,4 +10,4 @@ COPY python_script.py /app/
 #RUN pip install some_dependency
 
 # Set the command to execute the Python script with command-line options
-CMD ["python", "python_script.py", "--option1", "${OPTION_1}", "--option2", "${OPTION_2}"]
+CMD python python_script.py --option1 $OPTION_1 --option2 $OPTION_2

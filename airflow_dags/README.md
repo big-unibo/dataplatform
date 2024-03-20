@@ -62,7 +62,7 @@ dag = my_dag()
 - remove from docker registry:
   - registry garbage-collect -m /etc/docker/registry/config.yml
 - build image for registry `docker image build --tag 127.0.0.0:5000/test_img_3 .`
-- push on registry `docker run 127.0.0.0:5000/test_img_3`
+- push on registry `docker push 127.0.0.0:5000/test_img_3`
 
 # Use docker images on docker hub
 docker build -t my_image .
