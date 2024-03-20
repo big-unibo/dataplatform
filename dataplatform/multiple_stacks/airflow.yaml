@@ -28,7 +28,7 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: apache/airflow:latest
+  image: apache/airflow:2.8.3
   # build: .
   environment:
     &airflow-common-env
@@ -45,14 +45,15 @@ x-airflow-common:
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
     # yamllint enable rule:line-length
-    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    #TODO Check AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-docker } #apache-airflow-providers-apache-spark
-    _AIRFLOW_DB_MIGRATE: 'true'
-    _AIRFLOW_WWW_USER_CREATE: 'false'
-    _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
-    _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+    #TODO check the following
+    #_AIRFLOW_DB_MIGRATE: 'true'
+    #_AIRFLOW_WWW_USER_CREATE: 'false'
+    #_AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+    #_AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
   volumes:
     - airflow_data:/opt/airflow/
   user: "${AIRFLOW_UID:-50000}:0"
@@ -71,11 +72,11 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - /mnt/disk1/airflow_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
+#     healthcheck:
+#         test: ["CMD", "pg_isready", "-U", "airflow"]
+#         interval: 10s
+#         retries: 5
+#         start_period: 5s
     networks:
       - BIG-dataplatform-network 
     deploy:
@@ -89,12 +90,12 @@ services:
     image: redis:latest
     expose:
       - 6379
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 30s
-      retries: 50
-      start_period: 30s
+#     healthcheck:
+#          test: ["CMD", "redis-cli", "ping"]
+#          interval: 10s
+#          timeout: 30s
+#          retries: 50
+#          start_period: 30s
     networks:
       - BIG-dataplatform-network 
     deploy:
@@ -123,29 +124,35 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-      - "48081:8080"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      - ${AIRFLOW_WEB_SERVER_PORT}:8080
+#    healthcheck:
+#        test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+#        interval: 30s
+#        timeout: 10s
+#        retries: 5
+#        start_period: 30s
     networks:
       - BIG-dataplatform-network
-      - node.role == manager
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   scheduler:
     <<: *airflow-common
     command: scheduler
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+#    healthcheck:
+#     test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+#     interval: 30s
+#     timeout: 10s
+#     retries: 5
+#     start_period: 30s
     networks:
       - BIG-dataplatform-network
-      - node.labels.running_airflow_webserver == 1
+    deploy:
+      placement:
+        constraints:
+          - node.labels.running_airflow_webserver == 1
 
   worker:
     <<: *airflow-common
@@ -166,7 +173,10 @@ services:
       DUMB_INIT_SETSID: "0"
     networks:
       - BIG-dataplatform-network
-      - node.role == worker
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
 
   triggerer:
     <<: *airflow-common
@@ -179,36 +189,82 @@ services:
 #      start_period: 30s
     networks:
       - BIG-dataplatform-network
-      - node.labels.running_airflow_webserver == 1
+    deploy:
+      placement:
+        constraints:
+          - node.labels.running_airflow_webserver == 1
 
-  # init:
-  #   <<: *airflow-common
-  #   entrypoint: /bin/bash
-  #   # yamllint disable rule:line-length
-  #   command:
-  #     - -c
-  #     - |
-  #       if [[ -z "${AIRFLOW_UID}" ]]; then
-  #         echo
-  #         echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
-  #         echo "If you are on Linux, you SHOULD follow the instructions below to set "
-  #         echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
-  #         echo "For other operating systems you can get rid of the warning with manually created .env file:"
-  #         echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
-  #         echo
-  #       fi
-  #       mkdir -p /sources/logs /sources/dags /sources/plugins
-  #       chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
-  #       exec /entrypoint airflow version
-  #   # yamllint enable rule:line-length
-  #   environment:
-  #     <<: *airflow-common-env
-
-  #   user: "0:0"
-  #   volumes:
-  #     - airflow_data:/sources
-  #   networks:
-  #     - BIG-dataplatform-network 
+  init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - -c
+      - |
+        if [[ -z "${AIRFLOW_UID}" ]]; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
+          echo "If you are on Linux, you SHOULD follow the instructions below to set "
+          echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
+          echo "For other operating systems you can get rid of the warning with manually created .env file:"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
+          echo
+        fi
+        one_meg=1048576
+        mem_available=$$(($$(getconf _PHYS_PAGES) * $$(getconf PAGE_SIZE) / one_meg))
+        cpus_available=$$(grep -cE 'cpu[0-9]+' /proc/stat)
+        disk_available=$$(df / | tail -1 | awk '{print $$4}')
+        warning_resources="false"
+        if (( mem_available < 4000 )) ; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: Not enough memory available for Docker.\e[0m"
+          echo "At least 4GB of memory required. You have $$(numfmt --to iec $$((mem_available * one_meg)))"
+          echo
+          warning_resources="true"
+        fi
+        if (( cpus_available < 2 )); then
+          echo
+          echo -e "\033[1;33mWARNING!!!: Not enough CPUS available for Docker.\e[0m"
+          echo "At least 2 CPUs recommended. You have $${cpus_available}"
+          echo
+          warning_resources="true"
+        fi
+        if (( disk_available < one_meg * 10 )); then
+          echo
+          echo -e "\033[1;33mWARNING!!!: Not enough Disk space available for Docker.\e[0m"
+          echo "At least 10 GBs recommended. You have $$(numfmt --to iec $$((disk_available * 1024 )))"
+          echo
+          warning_resources="true"
+        fi
+        if [[ $${warning_resources} == "true" ]]; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: You have not enough resources to run Airflow (see above)!\e[0m"
+          echo "Please follow the instructions to increase amount of resources available:"
+          echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
+          echo
+        fi
+        mkdir -p /sources/logs /sources/dags /sources/plugins
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        exec /entrypoint airflow version
+    # yamllint enable rule:line-length
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+      _PIP_ADDITIONAL_REQUIREMENTS: ''
+    user: "0:0"
+    volumes:
+      - airflow_data:/sources
+    networks:
+      - BIG-dataplatform-network
+    deploy:
+      restart_policy:
+        condition: on-failure #TODO check
+      placement:
+        constraints:
+          - node.labels.running_airflow_webserver == 1
 
   # cli:
   #   <<: *airflow-common
