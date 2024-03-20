@@ -1,7 +1,5 @@
 FROM python:3.8
 
-ARG OPTION_1
-ARG OPTION_2
 # Set working directory
 WORKDIR /app
 

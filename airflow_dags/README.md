@@ -21,6 +21,7 @@
 - https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html
 - https://airflow.apache.org/docs/apache-airflow/1.10.1/scheduler.html
 - https://airflow.apache.org/docs/apache-airflow-providers-docker/1.0.2/_api/airflow/providers/docker/operators/docker/index.html
+- [Installazione](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)
 
 # Trigger dag from python application
 
@@ -60,6 +61,8 @@ dag = my_dag()
 # Use local docker registry at 127.0.0.0:5000
 - remove from docker registry:
   - registry garbage-collect -m /etc/docker/registry/config.yml
+- build image for registry `docker image build --tag 127.0.0.0:5000/test_img_3 .`
+- push on registry `docker run 127.0.0.0:5000/test_img_3`
 
 # Use docker images on docker hub
 docker build -t my_image .

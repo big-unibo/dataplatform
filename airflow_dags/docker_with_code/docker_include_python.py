@@ -17,8 +17,9 @@ docker_env_vars = {
 
 docker_task = DockerOperator(
     task_id='docker_task',
-    image='chiaraforresi/test:v0.0.2',
-    docker_conn_id='docker_hub_chiaraforresi',  # Connection ID for Docker Hub
+    auto_remove=True,
+    image='127.0.0.0:5000/test_py:v0.0.1',
+    container_name='test_py_001', #name of container
     dag=dag,
     docker_url='tcp://docker-proxy:2375', # The connection to the Docker daemon, the socket should exist in the container
     network_mode='host', # The network mode for the container (internal network), if use "host" the container will share the host network
