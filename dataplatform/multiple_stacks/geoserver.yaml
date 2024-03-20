@@ -16,7 +16,7 @@ services:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
-          - node.role == worker
+          - node.role == manager
 
 volumes:
   geoserver_data:
