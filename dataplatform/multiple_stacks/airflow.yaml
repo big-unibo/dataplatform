@@ -177,6 +177,7 @@ services:
       placement:
         constraints:
           - node.role == worker
+          - node.hostname != CB-Mass-Node1
 
   triggerer:
     <<: *airflow-common
@@ -228,7 +229,7 @@ services:
       - BIG-dataplatform-network
     deploy:
       restart_policy:
-        condition: on-failure #TODO check
+        condition: on-failure
       placement:
         constraints:
           - node.labels.running_airflow_webserver == 1

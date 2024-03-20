@@ -10,7 +10,7 @@ services:
     command: ["script/geoserver-hdfs-client-script.sh"]
     deploy:
       restart_policy:
-        condition: none # TODO check if not restart after complete
+        condition: on-failure
       placement:
         constraints:
           - node.role != manager
