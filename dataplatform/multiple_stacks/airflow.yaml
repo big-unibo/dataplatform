@@ -215,7 +215,7 @@ services:
       _AIRFLOW_DB_MIGRATE: 'false' #this is for copy data
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
-      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow} #TODO github secret
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
     volumes:
