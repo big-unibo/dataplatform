@@ -81,7 +81,7 @@ services:
   #        - node.labels.test_airflow_postgres==1
 
 
-  redis:
+  airflow-redis:
     image: redis:latest
     expose:
       - 6379
@@ -115,7 +115,7 @@ services:
           - node.hostname != CB-Mass-Node1
           - node.labels.running_airflow_webserver == 1
 
-  webserver:
+  airflow-webserver:
     <<: *airflow-common
     command: webserver
     ports:
@@ -134,7 +134,7 @@ services:
           - node.role == manager
           - node.hostname != CB-Mass-Node1
 
-  scheduler:
+  airflow-scheduler:
     <<: *airflow-common
     command: scheduler
 #    healthcheck:
@@ -150,7 +150,7 @@ services:
         constraints:
           - node.labels.running_airflow_webserver == 1
 
-  worker:
+  airflow-worker:
     <<: *airflow-common
     command: celery worker
 #    healthcheck:
@@ -175,7 +175,7 @@ services:
           - node.role == worker
           - node.hostname != CB-Mass-Node1
 
-  triggerer:
+  airflow-triggerer:
     <<: *airflow-common
     command: triggerer
 #    healthcheck:
@@ -191,7 +191,7 @@ services:
         constraints:
           - node.labels.running_airflow_webserver == 1
 
-  init:
+  airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
     # yamllint disable rule:line-length
