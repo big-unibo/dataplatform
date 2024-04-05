@@ -34,7 +34,7 @@ Start example:
 - **mount_tmp_dir**=False, not mount a temporary directory
 - **container_name**=similar to task name 
 - **placement**
-- **network_mode**
+- **network_mode** and **networks** use BIG-dataplatform-network
 - For extra things refer to the official documentation
 
 ### Trigger a dag from python application
@@ -43,7 +43,7 @@ through the `python-service-interaction-utils/src/main/python/airflow_interactio
 
 ### Common errors in the deploy
 - not pass files that are in .gitignore in the build of the container
-- use public ip, we are inside the cluster :D
+- use service names and internal ports when refer to other services (not use exposed ports)
 - set the link to services in the config to the new clusters (e.g., hdfs) 
 - Errors in dag import: enter inside airflow-scheduler container and launch `airflow scheduler`
 
