@@ -81,7 +81,7 @@ services:
   #        - node.labels.test_airflow_postgres==1
 
 
-  airflow-redis:
+  redis:
     image: redis:latest
     expose:
       - 6379
