@@ -33,7 +33,8 @@ do
     # Perform substitution using both substitution file and .env file
     if [ -f "$substitution_file" ]; then
         # Use substitution from the provided file if present
-        envsubst < "${stack}.yaml" | envsubst "$(cat "$substitution_file")" > "runtime/${stack}-subs.yaml"
+        env_vars=$(cat "$substitution_file" | sed 's/[^a-zA-Z0-9_]/\\&/g' | sed -e '/^$/d' | xargs)
+        envsubst "$env_vars" < "${stack}.yaml" > "runtime/${stack}-subs.yaml"
     else
         # Use only .env file for substitution
         envsubst < "${stack}.yaml" > "runtime/${stack}-subs.yaml"
