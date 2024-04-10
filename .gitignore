@@ -639,3 +639,5 @@ fabric.propertyDataList
 /python-utils/src/main/python/gmail/credentials.json
 /python-utils/src/main/python/gmail/token.pickle
 *.png
+
+*.airflow.env
