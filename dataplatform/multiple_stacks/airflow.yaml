@@ -49,6 +49,12 @@ x-airflow-common:
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-} #apache-airflow-providers-docker apache-airflow-providers-apache-spark
+    #mail parameters
+    AIRFLOW__SMTP__SMTP_HOST: $AIRFLOW_SMTP_SMTP_HOST
+    AIRFLOW__SMTP__SMTP_PORT: $AIRFLOW_SMTP_SMTP_PORT
+    AIRFLOW__SMTP__SMTP_USER: $AIRFLOW_SMTP_SMTP_USER
+    AIRFLOW__SMTP__SMTP_PASSWORD: $AIRFLOW_SMTP_SMTP_PASSWORD
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: $AIRFLOW_SMTP_SMTP_MAIL_FROM
   volumes:
     - airflow_data:/opt/airflow/
   user: "${AIRFLOW_UID:-50000}:0"
