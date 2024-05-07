@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  sftp:
+    image: atmoz/sftp
+    volumes:
+        - pnrr_datalake:/home/
+    ports:
+        - ${SFTPPORT}:22"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network         
+
+volumes:
+  pnrr_datalake:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/pnrr_datalake/"
+        
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
