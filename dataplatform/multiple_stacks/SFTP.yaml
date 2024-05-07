@@ -4,6 +4,7 @@ services:
     image: atmoz/sftp
     volumes:
       - pnrr_datalake:/home/
+      - host_keys:/etc/ssh/
     ports:
       - ${SFTPPORT}:22
     command: mpasini:pass:1001
@@ -20,6 +21,12 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/pnrr_datalake/"
+      
+  host_keys:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/sftp_hostkeys/"
         
 networks:
   BIG-dataplatform-network:
