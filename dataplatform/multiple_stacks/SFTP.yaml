@@ -5,7 +5,7 @@ services:
     volumes:
         - pnrr_datalake:/home/
     ports:
-        - ${SFTPPORT}:22"
+        - ${SFTPPORT}:22
     deploy:
       placement:
         constraints:
