@@ -4,10 +4,11 @@ services:
     image: atmoz/sftp
     volumes:
       - pnrr_datalake:/home/
-      - host_keys:/etc/ssh/
+      - host_key_ed25519:/etc/ssh/ssh_host_ed25519_key
+      - host_key_rsa:/etc/ssh/ssh_host_rsa_key
     ports:
       - ${SFTPPORT}:22
-    command: mpasini:pass:1001
+    command: admin::1001
     deploy:
       placement:
         constraints:
@@ -21,12 +22,18 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/pnrr_datalake/"
-      
-  host_keys:
+
+  host_key_ed25519:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/dataplatform_config/sftp_hostkeys/"
+      device: ":${NFSPATH}/dataplatform_config/sftp_hostkeys/ssh_host_ed25519_key"
+
+  host_key_rsa:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/sftp_hostkeys/ssh_host_rsa_key"
         
 networks:
   BIG-dataplatform-network:
