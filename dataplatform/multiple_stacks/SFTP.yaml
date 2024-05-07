@@ -4,8 +4,9 @@ services:
     image: atmoz/sftp
     volumes:
       - pnrr_datalake:/home/
-      - host_key_ed25519:/etc/ssh/ssh_host_ed25519_key
-      - host_key_rsa:/etc/ssh/ssh_host_rsa_key
+      # - host_key_ed25519:/etc/ssh/ssh_host_ed25519_key
+      # - host_key_rsa:/etc/ssh/ssh_host_rsa_key
+      - host_keys: /etc/ssh/
     ports:
       - ${SFTPPORT}:22
     command: admin::1001
@@ -34,6 +35,12 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/sftp_hostkeys/ssh_host_rsa_key.pub"
+
+  host_keys:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/sftp_hostkeys/"
         
 networks:
   BIG-dataplatform-network:
