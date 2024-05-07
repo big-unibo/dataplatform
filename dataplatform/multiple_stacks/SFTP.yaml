@@ -3,9 +3,10 @@ services:
   sftp:
     image: atmoz/sftp
     volumes:
-        - pnrr_datalake:/home/
+      - pnrr_datalake:/home/
     ports:
-        - ${SFTPPORT}:22
+      - ${SFTPPORT}:22
+    command: mpasini:pass:1001
     deploy:
       placement:
         constraints:
