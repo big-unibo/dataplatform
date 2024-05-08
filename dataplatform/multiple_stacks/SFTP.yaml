@@ -23,19 +23,19 @@ volumes:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/pnrr_datalake/"
+      device: ":${NFSPATH}/pnrr_dataplatform/datalake/"
 
   users:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/pnrr_users/"
+      device: ":${NFSPATH}/pnrr_dataplatform/users/"
 
   host_keys:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/dataplatform_config/sftp_hostkeys/"
+      device: ":${NFSPATH}/pnrr_dataplatform/sftp_hostkeys/"
         
 networks:
   BIG-dataplatform-network:
