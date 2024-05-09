@@ -11,6 +11,12 @@ services:
     ports:
       - ${SFTPPORT}:22
     command: admin::1001
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update
+        apt-get install acl
     deploy:
       placement:
         constraints:
