@@ -10,13 +10,14 @@ services:
       - users:/etc/sftp
     ports:
       - ${SFTPPORT}:22
-    command: admin::1001
+    # command: admin::1001
     command:
       - /bin/bash
       - -c
       - |
         apt-get update
         apt-get install acl
+        tail -f /dev/null
     deploy:
       placement:
         constraints:
