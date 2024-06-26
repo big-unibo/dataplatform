@@ -21,11 +21,11 @@ docker_task = DockerSwarmOperator(
     task_id='utils_docker_cleaner_task',
     auto_remove=True,
     image=img,
-    container_name='utils_docker_cleaner_task', #name of container TODO not uniquer
+    container_name='utils_docker_cleaner_task',
     dag=dag,
     docker_url='tcp://docker-proxy:2375', # The connection to the Docker daemon, the socket should exist in the container
-    networks=['BIG-dataplatform-network'],
-	network_mode='BIG-dataplatform-network',
+	network_mode='host', # BIG-dataplatform-network
+	# network_mode='BIG-dataplatform-network',
     mount_tmp_dir=False,
     mode=ServiceMode('global'),
 	placement=Placement(constraints=['node.hostname != CB-Mass-Node1']),
