@@ -15,8 +15,10 @@ dag = DAG('utils_docker_cleaner', default_args=default_args,
           catchup=False, # Set to False to skip any historical runs
           tags=['utils']
 )
+
 version = 'v0.0.1'
 img = f'127.0.0.0:5000/docker_cleaner:{version}'
+
 docker_task = DockerSwarmOperator(
     task_id='utils_docker_cleaner_task',
     auto_remove=True,
@@ -26,6 +28,7 @@ docker_task = DockerSwarmOperator(
     docker_url='tcp://docker-proxy:2375', # The connection to the Docker daemon, the socket should exist in the container
 	network_mode='host', # BIG-dataplatform-network
 	# network_mode='BIG-dataplatform-network',
+    volumes=['/var/run/docker.sock:/var/run/docker.sock'],
     mount_tmp_dir=False,
     mode=ServiceMode('global'),
 	placement=Placement(constraints=['node.hostname != CB-Mass-Node1']),
