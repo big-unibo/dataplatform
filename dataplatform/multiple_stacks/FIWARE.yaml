@@ -22,13 +22,20 @@ services:
       - "${MONGODB_PORT}:27017"
     networks:
       - BIG-dataplatform-network
-    # volumes:
-    #   - mongodb_volume:/data/db
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
 
+  fileserver:
+    init: true
+    image: jetbrainsinfra/nginx-file-listing:0.2
+    ports:
+      - "${FILESERVER_PORT}:80"
+    volumes:
+      - dataset-volume:/mnt/data
+    networks:
+      - BIG-dataplatform-network
   # mosquitto:
   #   init: true
   #   image: eclipse-mosquitto:2.0.11
@@ -69,36 +76,26 @@ services:
   #   depends_on:
   #     - mongodb
 
-  fileserver:
-    init: true
-    image: jetbrainsinfra/nginx-file-listing:0.2
-    ports:
-      - "${FILESERVER_PORT}:80"
-    volumes:
-      - dataset-volume:/mnt/data
-    networks:
-      - BIG-dataplatform-network
-
-  ftp:
-    init: true
-    image: stilliard/pure-ftpd
-    environment:
-      FTP_USER_NAME: "${FTP_USER}"
-      FTP_USER_PASS: "${FTP_PWD}"
-      FTP_USER_HOME: "/data"
-      FTP_PASSIVE_PORTS: "${FTP_PORT_MIN}:${FTP_PORT_MAX}"
-      FTP_MAX_CLIENTS: 50
-      FTP_MAX_CONNECTIONS: 20
-      ADDED_FLAGS: "-d -d"
-      PUBLICHOST: "${FTP_IP}"
-    volumes:
-      - ftp-volume:/data
-    ports:
-      - "${FTP_PORT_FTP20_EXT}:20"
-      - "${FTP_PORT_FTP21_EXT}:21"
-      - "${FTP_PORT_MIN}-${FTP_PORT_MAX}:${FTP_PORT_MIN}-${FTP_PORT_MAX}/tcp"
-    networks:
-      - BIG-dataplatform-network
+  # ftp:
+  #   init: true
+  #   image: stilliard/pure-ftpd
+  #   environment:
+  #     FTP_USER_NAME: "${FTP_USER}"
+  #     FTP_USER_PASS: "${FTP_PWD}"
+  #     FTP_USER_HOME: "/data"
+  #     FTP_PASSIVE_PORTS: "${FTP_PORT_MIN}:${FTP_PORT_MAX}"
+  #     FTP_MAX_CLIENTS: 50
+  #     FTP_MAX_CONNECTIONS: 20
+  #     ADDED_FLAGS: "-d -d"
+  #     PUBLICHOST: "${FTP_IP}"
+  #   volumes:
+  #     - ftp-volume:/data
+  #   ports:
+  #     - "${FTP_PORT_FTP20_EXT}:20"
+  #     - "${FTP_PORT_FTP21_EXT}:21"
+  #     - "${FTP_PORT_MIN}-${FTP_PORT_MAX}:${FTP_PORT_MIN}-${FTP_PORT_MAX}/tcp"
+  #   networks:
+  #     - BIG-dataplatform-network
 
 volumes:
 
@@ -118,13 +115,7 @@ volumes:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: ":${NFSPATH}/datasets/"
-
-  mongodb_volume:
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: ":${NFSPATH}/mongodb-data/"
+      device: ":${NFSPATH}/pnrr_dataplatform/datalake/"
 
 networks:
   BIG-dataplatform-network:
