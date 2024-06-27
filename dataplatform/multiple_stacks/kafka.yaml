@@ -22,19 +22,6 @@ services:
       - BIG-dataplatform-network
 
 volumes:
-  spark_config:
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: ":${NFSPATH}/dataplatform_config/spark_conf/"
-        
-  hadoop_config:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
-
   kafka_data:
     driver_opts:
       type: nfs
