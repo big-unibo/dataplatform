@@ -23,6 +23,8 @@ services:
     image: docker.osgeo.org/geoserver:2.25.x
     environment:
       SKIP_DEMO_DATA: "true"
+      GEOSERVER_CSRF_DISABLE: "false"
+      GEOSERVER_CSRF_WHITELIST: 'big.csr.unibo.it'
     networks:
       - BIG-dataplatform-network
     ports:
