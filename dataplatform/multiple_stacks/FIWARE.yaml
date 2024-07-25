@@ -33,9 +33,14 @@ services:
     ports:
       - "${FILESERVER_PORT}:80"
     volumes:
-      - dataset-volume:/mnt/data
+      - pnrr-datalake-landing:/mnt/data
     networks:
       - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+
   # mosquitto:
   #   init: true
   #   image: eclipse-mosquitto:2.0.11
@@ -111,7 +116,7 @@ volumes:
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: ":${NFSPATH}/ftp/"
 
-  dataset-volume:
+  pnrr-datalake-landing:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
