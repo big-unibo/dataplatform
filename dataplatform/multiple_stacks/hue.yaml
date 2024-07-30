@@ -8,12 +8,12 @@ services:
       volumes:
         - hadoop_config:${HADOOPCONFDIR}
         - hue_config:${HUECONFDIR}
-    deploy:
-      placement:
-        constraints:
-          - node.hostname != CB-Mass-Node1
-    networks:
-      - BIG-dataplatform-network 
+      deploy:
+        placement:
+          constraints:
+            - node.hostname != CB-Mass-Node1
+      networks:
+        - BIG-dataplatform-network 
 
 volumes:
   hadoop_config:
