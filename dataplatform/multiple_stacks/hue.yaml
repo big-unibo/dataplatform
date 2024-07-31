@@ -4,10 +4,12 @@ services:
   hue:
       image: gethue/hue:latest
       ports:
-        - ${HUEPORT}:${HUEPORT}
+        - ${HUEPORT}:8888
       volumes:
         - hadoop_config:${HADOOPCONFDIR}
         - hue_config:${HUECONFDIR}
+      environment:
+        HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop/
       deploy:
         placement:
           constraints:
