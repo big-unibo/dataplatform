@@ -1,7 +1,10 @@
 # Airflow
 [Installazione](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)
+Deploy:
+- `sudo ./deploy_swarm.sh airflow "../.airflow.env"`
 
 ## Docker registry
+- `sudo ./deploy_swarm.sh registry`
 - stack `dataplatform/multiple_stacks/registry.yaml`
 - contact locally in the cluster at 127.0.0.0:5000
 - Starting from a Docker file in a cluster machine
@@ -42,6 +45,7 @@ This is made in **abds-bigdata** project `ingestion-weather` module,
 through the `python-service-interaction-utils/src/main/python/airflow_interaction.py` service.
 
 ### Common errors in the deploy
+- The deploy should include the `.airflow.env` file (see above command)
 - not pass files that are in .gitignore in the build of the container
 - use service names and internal ports when refer to other services (not use exposed ports)
 - set the link to services in the config to the new clusters (e.g., hdfs) 
