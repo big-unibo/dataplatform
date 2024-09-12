@@ -19,14 +19,12 @@ services:
 
 volumes:
   hadoop_config:
-    driver: local
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
 
   hue_config:
-    driver: local
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
