@@ -3,18 +3,22 @@ version: '3.9'
 services:
   geoserver:
     image: docker.osgeo.org/geoserver:2.25.x
+    environment:
+      SKIP_DEMO_DATA: "true"
+      GEOSERVER_CSRF_DISABLE: "false"
+      GEOSERVER_CSRF_WHITELIST: 'big.csr.unibo.it'
     networks:
       - BIG-dataplatform-network
     ports:
-      - 81:8080
+      - ${GEOSERVER_PORT}:8080
     volumes:
-      - geoserver_data:/opt/geoserver_data
-      - geoserver_data_dir:/home/geoserver/data
+      - geoserver_data_dir:/opt/geoserver_data
+      - geoserver_data:/home/geoserver/data
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
-          - node.role == worker
+          - node.role == manager
 
 volumes:
   geoserver_data:
@@ -27,11 +31,11 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: :${NFSPATH}/dataplatform_config/geoserver/data_dir
-  geoserver_conf:
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: :${NFSPATH}/dataplatform_config/geoserver_conf/
+  #geoserver_conf:
+  #  driver_opts:
+  #    type: nfs
+  #    o: addr=${NFSADDRESS},rw,nfsvers=4
+  #    device: :${NFSPATH}/dataplatform_config/geoserver_conf/
 
 networks:
   BIG-dataplatform-network:

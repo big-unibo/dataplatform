@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  sftp:
+    image: atmoz/sftp
+    volumes:
+      - pnrr_datalake:/home
+      # - host_key_ed25519:/etc/ssh/ssh_host_ed25519_key
+      # - host_key_rsa:/etc/ssh/ssh_host_rsa_key
+      - host_keys:/etc/ssh/
+      - users:/etc/sftp
+    ports:
+      - ${SFTPPORT}:22
+    # command: admin::1001
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network         
+
+volumes:
+  pnrr_datalake:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/pnrr_dataplatform/datalake/"
+
+  users:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/pnrr_dataplatform/users/"
+
+  host_keys:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/pnrr_dataplatform/sftp_hostkeys/"
+        
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network

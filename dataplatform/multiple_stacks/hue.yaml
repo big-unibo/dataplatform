@@ -1,20 +1,21 @@
 version: "3.9"
+
 services:
-  hdfs-client:
-    image: apache/hadoop:${HADOOPVERSION}
+  hue:
+    image: gethue/hue:latest
+    ports:
+      - ${HUEPORT}:8888
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
-      - data_to_load:/home/data
-    command: ["tail", "-f", "/dev/null"]
-    stdin_open: true
-    tty: true
+      - hue_config:${HUECONFDIR}
+    environment:
+      HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop/
     deploy:
       placement:
         constraints:
-          - node.role != manager
           - node.hostname != CB-Mass-Node1
     networks:
-      - BIG-dataplatform-network
+      - BIG-dataplatform-network 
 
 volumes:
   hadoop_config:
@@ -23,12 +24,13 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
-  data_to_load:
+
+  hue_config:
     driver: local
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/pnrr_dataplatform/dump/"
+      device: ":${NFSPATH}/dataplatform_config/hue_conf/"
 
 networks:
   BIG-dataplatform-network:

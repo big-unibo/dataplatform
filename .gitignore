@@ -1,3 +1,5 @@
+.env
+dataplatform/.env
 /dataplatform/tests/HDFD_VENV_3.7
 /dataplatform/tests/HDFD_VENV_3.7
 /dataplatform/multiple_stacks/runtime/
@@ -639,3 +641,5 @@ fabric.propertyDataList
 /python-utils/src/main/python/gmail/credentials.json
 /python-utils/src/main/python/gmail/token.pickle
 *.png
+
+*.airflow.env

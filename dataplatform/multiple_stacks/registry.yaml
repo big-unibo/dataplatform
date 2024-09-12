@@ -1,0 +1,30 @@
+version: '3.9'
+
+services: #available services at 127.0.0.0:5000
+  registry:
+    image: registry:2.8.3
+    networks:
+      - BIG-dataplatform-network
+    ports:
+      - ${DOCKERREGISTRYPORT}:${DOCKERREGISTRYPORT}
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+    volumes:
+      - docker_registry_data:/data
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+          - node.role == worker
+
+volumes:
+  docker_registry_data:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/docker_registry
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network

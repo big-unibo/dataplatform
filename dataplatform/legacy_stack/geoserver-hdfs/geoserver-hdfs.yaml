@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  hdfs-client:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - geoserver_conf:/opt/hadoop/script
+      - /mnt/disk1/geoserver_data:/geoserver_data
+    command: ["script/geoserver-hdfs-client-script.sh"]
+    deploy:
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role != manager
+          - node.hostname != CB-Mass-Node1
+          - node.labels.running_geoserver==1 #run in the same machine
+    networks:
+      - BIG-dataplatform-network
+
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.25.x
+    environment:
+      SKIP_DEMO_DATA: "true"
+      GEOSERVER_CSRF_DISABLE: "false"
+      GEOSERVER_CSRF_WHITELIST: 'big.csr.unibo.it'
+    networks:
+      - BIG-dataplatform-network
+    ports:
+      - ${GEOSERVER_PORT}:8080
+    volumes:
+      - geoserver_data_dir:/opt/geoserver_data
+      - /mnt/disk1/geoserver_data:/home/geoserver/data
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+          - node.role == worker
+          - node.labels.running_geoserver==1 #run in the same machine
+
+volumes:
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
+  geoserver_data_dir:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver/data_dir
+  geoserver_conf:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/geoserver_conf/
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network

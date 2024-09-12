@@ -28,13 +28,13 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: apache/airflow:latest
+  image: apache/airflow:2.8.3
   # build: .
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://$AIRFLOW_USER:$AIRFLOW_PASSWORD@$AIRFLOW_DB
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://$AIRFLOW_USER:$AIRFLOW_PASSWORD@$AIRFLOW_DB
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -45,14 +45,20 @@ x-airflow-common:
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
     # yamllint enable rule:line-length
-    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    # AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-docker } #apache-airflow-providers-apache-spark
-    _AIRFLOW_DB_MIGRATE: 'true'
-    _AIRFLOW_WWW_USER_CREATE: 'false'
-    _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
-    _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-} #apache-airflow-providers-docker apache-airflow-providers-apache-spark
+    #mail parameters
+    AIRFLOW__SMTP__EMAIL_BACKEND: 'airflow.utils.email.send_email_smtp'
+    AIRFLOW__SMTP__SMTP_HOST: $AIRFLOW_SMTP_SMTP_HOST
+    AIRFLOW__SMTP__SMTP_PORT: $AIRFLOW_SMTP_SMTP_PORT
+    AIRFLOW__SMTP__SMTP_USER: $AIRFLOW_SMTP_SMTP_USER
+    AIRFLOW__SMTP__SMTP_PASSWORD: $AIRFLOW_SMTP_SMTP_PASSWORD
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: $AIRFLOW_SMTP_SMTP_MAIL_FROM
+    AIRFLOW__SMTP__SMTP_STARTTLS: "true"
+    AIRFLOW__SMTP__SMTP_SSL: "false"
+    AIRFLOW_CONFIG: "/opt/airflow/airflow.cfg"
   volumes:
     - airflow_data:/opt/airflow/
   user: "${AIRFLOW_UID:-50000}:0"
@@ -63,44 +69,45 @@ x-airflow-common:
 
 
 services:
-  postgres:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
-    volumes:
-      - /mnt/disk1/airflow_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
-    networks:
-      - BIG-dataplatform-network 
-    deploy:
-      placement:
-        constraints:
-          - node.hostname != CB-Mass-Node1
-          - node.labels.test_airflow_postgres==1
+  #  postgres:
+  #  image: postgres:13
+  #  environment:
+  #    POSTGRES_USER: airflow
+  #    POSTGRES_PASSWORD: airflow
+  #    POSTGRES_DB: airflow
+  #  volumes:
+  #    - /mnt/disk1/airflow_postgres_data:/var/lib/postgresql/data
+#     healthcheck:
+#         test: ["CMD", "pg_isready", "-U", "airflow"]
+#         interval: 10s
+#         retries: 5
+#         start_period: 5s
+  #  networks:
+  #    - BIG-dataplatform-network
+  #  deploy:
+  #    placement:
+  #      constraints:
+  #        - node.hostname != CB-Mass-Node1
+  #        - node.labels.test_airflow_postgres==1
 
 
   redis:
     image: redis:latest
     expose:
       - 6379
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 30s
-      retries: 50
-      start_period: 30s
+#     healthcheck:
+#          test: ["CMD", "redis-cli", "ping"]
+#          interval: 10s
+#          timeout: 30s
+#          retries: 50
+#          start_period: 30s
     networks:
       - BIG-dataplatform-network 
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
+          - node.labels.running_airflow_webserver == 1
 
   #https://stackoverflow.com/questions/69316093/how-to-add-new-user-to-docker-image-when-running-distributed-airflow-architectur
   docker-proxy:
@@ -116,34 +123,44 @@ services:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
+          - node.labels.running_airflow_webserver == 1
 
-  webserver:
+  airflow-webserver:
     <<: *airflow-common
     command: webserver
     ports:
-      - "48081:8080"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      - ${AIRFLOW_WEB_SERVER_PORT}:8080
+#    healthcheck:
+#        test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+#        interval: 30s
+#        timeout: 10s
+#        retries: 5
+#        start_period: 30s
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
 
-  scheduler:
+  airflow-scheduler:
     <<: *airflow-common
     command: scheduler
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+#    healthcheck:
+#     test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+#     interval: 30s
+#     timeout: 10s
+#     retries: 5
+#     start_period: 30s
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.labels.running_airflow_webserver == 1
 
-  worker:
+  airflow-worker:
     <<: *airflow-common
     command: celery worker
 #    healthcheck:
@@ -161,9 +178,14 @@ services:
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.hostname != CB-Mass-Node1
 
-  triggerer:
+  airflow-triggerer:
     <<: *airflow-common
     command: triggerer
 #    healthcheck:
@@ -173,36 +195,50 @@ services:
 #      retries: 5
 #      start_period: 30s
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+    deploy:
+      placement:
+        constraints:
+          - node.labels.running_airflow_webserver == 1
 
-  # init:
-  #   <<: *airflow-common
-  #   entrypoint: /bin/bash
-  #   # yamllint disable rule:line-length
-  #   command:
-  #     - -c
-  #     - |
-  #       if [[ -z "${AIRFLOW_UID}" ]]; then
-  #         echo
-  #         echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
-  #         echo "If you are on Linux, you SHOULD follow the instructions below to set "
-  #         echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
-  #         echo "For other operating systems you can get rid of the warning with manually created .env file:"
-  #         echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
-  #         echo
-  #       fi
-  #       mkdir -p /sources/logs /sources/dags /sources/plugins
-  #       chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
-  #       exec /entrypoint airflow version
-  #   # yamllint enable rule:line-length
-  #   environment:
-  #     <<: *airflow-common-env
-
-  #   user: "0:0"
-  #   volumes:
-  #     - airflow_data:/sources
-  #   networks:
-  #     - BIG-dataplatform-network 
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - -c
+      - |
+        if [[ -z "${AIRFLOW_UID}" ]]; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
+          echo "If you are on Linux, you SHOULD follow the instructions below to set "
+          echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
+          echo "For other operating systems you can get rid of the warning with manually created .env file:"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
+          echo
+        fi
+        mkdir -p /sources/logs /sources/dags /sources/plugins
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        exec /entrypoint airflow version
+    # yamllint enable rule:line-length
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: 'false' #this is for copy data
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-$AIRFLOW_USER}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-$AIRFLOW_PASSWORD}
+      _PIP_ADDITIONAL_REQUIREMENTS: ''
+    user: "0:0"
+    volumes:
+      - airflow_data:/sources
+    networks:
+      - BIG-dataplatform-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.labels.running_airflow_webserver == 1
 
   # cli:
   #   <<: *airflow-common
@@ -224,12 +260,6 @@ networks:
     name: BIG-dataplatform-network
 
 volumes:
-  postgres_db_data:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/dataplatform_config/airflow_postgres_data/"
 
   airflow_data:
     driver: local
