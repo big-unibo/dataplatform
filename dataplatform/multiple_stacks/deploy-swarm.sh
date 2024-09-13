@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-if [ -z "./../.env"]; then
+if [ -f "./../.env" ]; then
   set -o allexport
   source ./../.env
   mkdir -p runtime
