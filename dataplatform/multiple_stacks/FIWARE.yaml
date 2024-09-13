@@ -3,43 +3,29 @@ services:
   orion:
     init: true
     image: fiware/orion:3.10.1
-    depends_on:
-      - mongodb
     networks:
       - BIG-dataplatform-network
     ports:
       - "${FIWARE_PORT}:1026"
-    command: -corsOrigin __ALL -dbhost mongodb -inReqPayloadMaxSize 5000000
+    command: -corsOrigin __ALL -dbhost ${MONGODB_IP} -inReqPayloadMaxSize 5000000
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
 
-  mongodb:
-    init: true
-    image: mongo:6.0
-    ports:
-      - "${MONGODB_PORT}:27017"
-    networks:
-      - BIG-dataplatform-network
-    deploy:
-      placement:
-        constraints:
-          - node.hostname != CB-Mass-Node1
-
-  fileserver:
-    init: true
-    image: jetbrainsinfra/nginx-file-listing:0.2
-    ports:
-      - "${FILESERVER_PORT}:80"
-    volumes:
-      - pnrr-datalake-landing:/mnt/data
-    networks:
-      - BIG-dataplatform-network
-    deploy:
-      placement:
-        constraints:
-          - node.hostname != CB-Mass-Node1
+  # mongodb:
+  #   init: true
+  #   image: mongo:6.0
+  #   ports:
+  #     - "${MONGODB_PORT}:27017"
+  #   networks:
+  #     - BIG-dataplatform-network
+  #   # volumes:
+  #   #   - mongodb_volume:/data/db
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.hostname != CB-Mass-Node1
 
   # mosquitto:
   #   init: true
@@ -81,6 +67,16 @@ services:
   #   depends_on:
   #     - mongodb
 
+  fileserver:
+    init: true
+    image: jetbrainsinfra/nginx-file-listing:0.2
+    ports:
+      - "${FILESERVER_PORT}:80"
+    volumes:
+      - dataset-volume:/mnt/data
+    networks:
+      - BIG-dataplatform-network
+
   # ftp:
   #   init: true
   #   image: stilliard/pure-ftpd
@@ -116,13 +112,20 @@ volumes:
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: ":${NFSPATH}/ftp/"
 
-  pnrr-datalake-landing:
+  dataset-volume:
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
-      device: ":${NFSPATH}/pnrr_dataplatform/datalake/"
+      device: ":${NFSPATH}/datasets/"
+
+  mongodb_volume:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: ":${NFSPATH}/mongodb-data/"
 
 networks:
   BIG-dataplatform-network:
     external: true
     name: BIG-dataplatform-network
+
