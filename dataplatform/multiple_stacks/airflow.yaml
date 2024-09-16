@@ -133,6 +133,8 @@ services:
         constraints:
           - node.role == worker
           - node.hostname != CB-Mass-Node1
+      mode: replicated
+      replicas: 3
 
   airflow-triggerer:
     <<: *airflow-common
