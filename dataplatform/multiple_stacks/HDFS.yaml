@@ -439,7 +439,7 @@ services:
         sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
-        export HADOOP_OPTS="-Ddfs.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}"
+        export HADOOP_OPTS="-Ddfs.datanode.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}"
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
