@@ -444,7 +444,7 @@ services:
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
         fi
-        hdfs --config ${HADOOPCONFDIR} datanode
+        hdfs --config ${HADOOPCONFDIR} datanode ${HADOOP_OPTS}
     deploy:
       placement:
         constraints:
