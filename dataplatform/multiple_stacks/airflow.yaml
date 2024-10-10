@@ -79,7 +79,7 @@ services:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
-          - node.labels.running_airflow_webserver == 1
+         # - node.labels.running_airflow_webserver == 1
 
   # https://stackoverflow.com/questions/69316093/how-to-add-new-user-to-docker-image-when-running-distributed-airflow-architectur
   docker-proxy:
@@ -95,7 +95,7 @@ services:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
-          - node.labels.running_airflow_webserver == 1
+         # - node.labels.running_airflow_webserver == 1
 
   airflow-webserver:
     <<: *airflow-common
@@ -115,10 +115,10 @@ services:
     command: scheduler
     networks:
       - BIG-dataplatform-network
-    deploy:
-      placement:
-        constraints:
-          - node.labels.running_airflow_webserver == 1
+   # deploy:
+     # placement:
+        #constraints:
+         # - node.labels.running_airflow_webserver == 1
 
   airflow-worker:
     <<: *airflow-common
@@ -141,10 +141,10 @@ services:
     command: triggerer
     networks:
       - BIG-dataplatform-network
-    deploy:
-      placement:
-        constraints:
-          - node.labels.running_airflow_webserver == 1
+   # deploy:
+      #placement:
+        #constraints:
+          #- node.labels.running_airflow_webserver == 1
 
   airflow-init:
     <<: *airflow-common
@@ -152,6 +152,7 @@ services:
     command:
       - -c
       - |
+        airflow db init
         if [[ -z "${AIRFLOW_UID}" ]]; then
           echo
           echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
@@ -179,10 +180,14 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+      #placement:
+       # constraints:
+         # - node.labels.running_airflow_webserver == 1
       placement:
         constraints:
-          - node.labels.running_airflow_webserver == 1
-  
+          - node.hostname != CB-Mass-Node1
+
+ 
 networks:
   BIG-dataplatform-network:
     external: true
