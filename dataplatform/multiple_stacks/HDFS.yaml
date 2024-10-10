@@ -456,6 +456,47 @@ services:
           - node.labels.running_datanode5==0
           - node.labels.running_datanode6==0
           - node.labels.running_datanode7==0
+          - node.labels.running_datanode9==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.labels.number_of_disks==2
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+  datanode9:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo mkdir -p ${DATADIR}
+        sudo chown hadoop ${DATADIR}
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        export HADOOP_OPTS="-Ddfs.datanode.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}"
+        if [ ! -d ${DATADIR} ]; then
+          echo "Datanode data directory not found: ${DATADIR}"
+          #exit 2
+        fi
+        hdfs --config ${HADOOPCONFDIR} datanode -Ddfs.datanode.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_datanode8==0
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.labels.number_of_disks==2
