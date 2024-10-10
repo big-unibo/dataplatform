@@ -445,8 +445,6 @@ services:
           #exit 2
         fi
         hdfs --config ${HADOOPCONFDIR} datanode
-    environment:
-      - HDFS_CONF.dfs.datanode.data.dir=/data/disk1,/data/disk2
     deploy:
       placement:
         constraints:
