@@ -31,6 +31,6 @@ docker_task = DockerSwarmOperator(
     volumes=['/var/run/docker.sock:/var/run/docker.sock'],
     mount_tmp_dir=False,
     mode=ServiceMode('global'),
-	placement=Placement(constraints=['node.hostname != CB-Mass-Node1']),
+	placement=Placement(constraints=['node.hostname != CB-Mass-Node1', 'node.role == manager']),
     xcom_all=True, # Enable XCom push for this task
 )

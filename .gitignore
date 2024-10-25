@@ -1,3 +1,5 @@
+.env
+dataplatform/.env
 /dataplatform/tests/HDFD_VENV_3.7
 /dataplatform/tests/HDFD_VENV_3.7
 /dataplatform/multiple_stacks/runtime/

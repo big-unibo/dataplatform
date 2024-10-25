@@ -1,10 +1,15 @@
 #!/bin/bash
 set -ex
 
-set -o allexport
-source ./../.env
-
-mkdir -p runtime
+if [ -f "./../.env" ]; then
+  set -o allexport
+  source ./../.env
+  mkdir -p runtime
+else
+  set -o allexport
+  source ./../.env.example
+  mkdir -p runtime
+fi
 
 # Check if the substitution file path is provided as a command-line argument
 if [ $# -eq 2 ]; then
