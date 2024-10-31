@@ -427,7 +427,7 @@ services:
   datanode8:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
-      - hadoop_config:${HADOOPCONFDIR}
+      - hadoop_config_2_disks:${HADOOPCONFDIR}
       - ${DATANODEDISK1}:${DATANODEDIR1}
       - ${DATANODEDISK2}:${DATANODEDIR2}
     command:
@@ -439,12 +439,11 @@ services:
         sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
-        export HADOOP_OPTS="-Ddfs.datanode.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}"
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
         fi
-        hdfs --config ${HADOOPCONFDIR} datanode -Ddfs.datanode.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}
+         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
@@ -467,7 +466,7 @@ services:
   datanode9:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
-      - hadoop_config:${HADOOPCONFDIR}
+      - hadoop_config_2_disks:${HADOOPCONFDIR}
       - ${DATANODEDISK1}:${DATANODEDIR1}
       - ${DATANODEDISK2}:${DATANODEDIR2}
     command:
@@ -479,12 +478,11 @@ services:
         sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
-        export HADOOP_OPTS="-Ddfs.datanode.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}"
         if [ ! -d ${DATADIR} ]; then
           echo "Datanode data directory not found: ${DATADIR}"
           #exit 2
         fi
-        hdfs --config ${HADOOPCONFDIR} datanode -Ddfs.datanode.data.dir=file://${DATANODEDIR1},file://${DATANODEDIR2}
+         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
@@ -553,7 +551,15 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
-  
+
+  hadoop_config_2_disks:
+    hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf_2_disk_datanode/"
+
 networks:
   BIG-dataplatform-network:
     external: true
