@@ -8,7 +8,8 @@ Deploy:
 - stack `dataplatform/multiple_stacks/registry.yaml`
 - contact locally in the cluster at 127.0.0.0:5000
 - Starting from a Docker file in a cluster machine
-  - `docker image build --tag 127.0.0.0:5000/IMAGE_NAME:VERSION -f PATH_DOCKERFILE .`
+  - `docker image build --tag IMAGE_NAME:VERSION -f PATH_DOCKERFILE .`
+  - `docker tag IMAGE_NAME:VERSION 127.0.0.0:5000/IMAGE_NAME:VERSION`
   - `docker push 127.0.0.0:5000/IMAGE_NAME:VERSION`
 - From any other cluster machine
   - `docker pull 127.0.0.0:5000/IMAGE_NAME:VERSION`
