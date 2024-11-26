@@ -4,7 +4,7 @@ FROM docker:stable
 RUN apk add --no-cache bash
 
 # Run the script
-ADD commands.sh /usr/local/bin/shell.sh
+ADD docker_cleaner/commands.sh /usr/local/bin/shell.sh
 
 RUN chmod 777 /usr/local/bin/shell.sh
 
