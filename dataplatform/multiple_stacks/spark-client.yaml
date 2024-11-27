@@ -8,6 +8,7 @@ services:
     volumes:
       - spark_config:${SPARKCONFDIR}
       - hadoop_config:${HADOOPCONFDIR}
+      - spark_bridge:/home/spark_bridge
     stdin_open: true 
     tty: true
     command:
@@ -36,6 +37,13 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
+  
+  spark_bridge:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/spark_bridge/"
 
 networks:
   BIG-dataplatform-network:
