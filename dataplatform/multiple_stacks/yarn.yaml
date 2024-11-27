@@ -3,7 +3,7 @@ services:
   resourcemanager:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - ${RESOURCEMANAGERPORT}:${RESOURCEMANAGERPORT}
+      - ${RESOURCEMANAGERPORT_EXT}:${RESOURCEMANAGERPORT}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
     command: 
