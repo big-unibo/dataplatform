@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  browser:
+    image: dorowu/ubuntu-desktop-lxde-vnc
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
+    ports:
+      - "45900:5900"  
+    environment:
+      - VNC_RESOLUTION=1920x1080
+      - VNC_PASSWORD=psw
+    networks:
+      - BIG-dataplatform-network
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
