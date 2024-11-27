@@ -1,16 +1,17 @@
 version: "3.9"
 services:
   browser:
-    image: selenium/standalone-firefox
+    image: consol/ubuntu-xfce-vnc
+    ports:
+      - "46901:6901"  # Porta per NoVNC (accesso via web browser)
     environment:
-      - SE_NODE_SESSION_TIMEOUT=300  # Timeout per la sessione
+      - USER=ubuntu
+      - PASSWORD=vncpassword
     deploy:
       placement:
         constraints:
           - node.role == manager
           - node.hostname != CB-Mass-Node1
-    ports:
-      - "45900:5900"  
     networks:
       - BIG-dataplatform-network
 
