@@ -498,7 +498,6 @@ volumes:
       device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
 
   hadoop_config_2_disks:
-    hadoop_config:
     driver: local
     driver_opts:
       type: nfs
