@@ -156,10 +156,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -194,11 +190,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -233,11 +224,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -273,10 +259,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -311,10 +293,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -349,10 +327,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -387,10 +361,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -423,11 +393,7 @@ services:
         sleep 30
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
-         hdfs --config ${HADOOPCONFDIR} datanode
+        hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
@@ -460,11 +426,8 @@ services:
         sleep 30
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
-         hdfs --config ${HADOOPCONFDIR} datanode
+        hdfs --config ${HADOOPCONFDIR} datanode
+  
     deploy:
       placement:
         constraints:
