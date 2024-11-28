@@ -153,8 +153,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
@@ -193,8 +191,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
@@ -234,8 +230,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
@@ -276,8 +270,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
@@ -316,8 +308,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
@@ -356,8 +346,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
@@ -396,8 +384,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
@@ -435,8 +421,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         if [ ! -d ${DATADIR} ]; then
@@ -474,8 +458,6 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         if [ ! -d ${DATADIR} ]; then
