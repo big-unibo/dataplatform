@@ -14,6 +14,8 @@ services:
       - -c
       - |
         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+        export HADOOP_CONF_DIR=/opt/spark/conf
+        export YARN_CONF_DIR=/opt/spark/conf
         ${SPARKBIN}start-master.sh
     deploy:
       placement:
@@ -34,6 +36,8 @@ services:
       - -c
       - |
         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+        export HADOOP_CONF_DIR=/opt/spark/conf
+        export YARN_CONF_DIR=/opt/spark/conf
         ${SPARKBIN}start-worker.sh spark://${SPARKMASTERHOST}:${SPARKMASTERPORT}
     deploy:
       placement:

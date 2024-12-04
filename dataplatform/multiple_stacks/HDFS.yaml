@@ -427,7 +427,6 @@ services:
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         hdfs --config ${HADOOPCONFDIR} datanode
-  
     deploy:
       placement:
         constraints:

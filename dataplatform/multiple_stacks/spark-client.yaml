@@ -16,6 +16,9 @@ services:
       - -c
       - |
         cp -r ${HADOOPCONFDIR}* ${SPARKCONFDIR}
+        export HADOOP_CONF_DIR=/opt/spark/conf
+        export YARN_CONF_DIR=/opt/spark/conf
+        export SPARK_CONF_DIR=/opt/spark/conf
         tail -f /dev/null
     deploy:
       placement:
