@@ -50,7 +50,7 @@ services:
       - spark_config:${SPARKCONFDIR}
       - hadoop_config:${HADOOPCONFDIR}
     ports:
-      - ${SPARKHISTSERVERPORT}:${SPARKHISTSERVERPORT}
+      - ${SPARKHISTSERVERPORT_EXT}:${SPARKHISTSERVERPORT}
     command:
       - /bin/bash
       - -c
