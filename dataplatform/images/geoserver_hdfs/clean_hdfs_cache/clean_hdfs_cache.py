@@ -31,7 +31,7 @@ def get_folder_size(folder):
     return total_size
 
 
-def sort_files_by_mod_time(folder):
+def sort_files_by_acces_time(folder):
     """Sort files in the folder by last access time."""
     # List all files in the folder (without subdirectories)
     files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
@@ -50,7 +50,7 @@ credentials_dict = load_yml(
 
 if os.path.exists(folder):
     folder_size = get_folder_size(folder)
-    ordered_files = sort_files_by_mod_time(folder)
+    ordered_files = sort_files_by_acces_time(folder)
 
     while folder_size > max_size:
         file = ordered_files.pop(0)
