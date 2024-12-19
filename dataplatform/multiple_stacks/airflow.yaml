@@ -95,6 +95,7 @@ services:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
+          - node.role == manager
          # - node.labels.running_airflow_webserver == 1
 
   airflow-webserver:
