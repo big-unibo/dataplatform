@@ -1,7 +1,7 @@
 # Airflow
-[Installazione](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)
+[Installation](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)
 Deploy:
-- `sudo ./deploy_swarm.sh airflow "../.airflow.env"`
+- `sudo ./deploy_swarm.sh airflow`
 
 ## Docker registry
 - `sudo ./deploy_swarm.sh registry`
@@ -21,7 +21,8 @@ Deploy:
 Start example:
 - In the directory of dags that is `:${NFSPATH}/dataplatform_config/airflow_data/dags`
   - create a directory for each project and put the file for generate the DAG (in a subdirectory)
-  - example of a files are in __abds-bigdata__ project `\cimice\src\main\resources` and `\ingestion-weather\src\main\resources`
+  - example of a files are in [__abds-bigdata__](https://bitbucket.org/egallinucci/abds-bigdata/src/master/) project `\cimice\src\main\resources` and `\ingestion-weather\src\main\resources`
+  - launch spark processes in [__abds-bigdata__](https://bitbucket.org/egallinucci/abds-bigdata/src/master/) project `aggregate-weekly-weather_processed/src/main/airflow/aggregate-weekly-weather_processed_dag.py`
 - [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html): A DAG (Directed Acyclic Graph) is the core concept of Airflow, collecting Tasks together, organized with dependencies and relationships to say how they should run.
   - [scheduling options](https://airflow.apache.org/docs/apache-airflow/1.10.1/scheduler.html)
 - Our dags are always of one task, that is a [Docker Operator](https://airflow.apache.org/docs/apache-airflow-providers-docker/1.0.2/_api/airflow/providers/docker/operators/docker/index.html)
@@ -42,15 +43,18 @@ Start example:
 - For extra things refer to the official documentation
 
 ### Trigger a dag from python application
-This is made in **abds-bigdata** project `ingestion-weather` module, 
+This is made in [__abds-bigdata__](https://bitbucket.org/egallinucci/abds-bigdata/src/master/) project `ingestion-weather` module, 
 through the `python-service-interaction-utils/src/main/python/airflow_interaction.py` service.
 
 ### Common errors in the deploy
-- The deploy should include the `.airflow.env` file (see above command)
 - not pass files that are in .gitignore in the build of the container
 - use service names and internal ports when refer to other services (not use exposed ports)
 - set the link to services in the config to the new clusters (e.g., hdfs) 
 - Errors in dag import: enter inside airflow-scheduler container and launch `airflow scheduler`
 
 ### Possible updates
-- configure an smpt server, for [send mails on failure](https://stackoverflow.com/questions/58736009/email-on-failure-retry-with-airflow-in-docker-container)
+- Configure an SMTP server to send mails on failure ([reference](https://stackoverflow.com/questions/58736009/email-on-failure-retry-with-airflow-in-docker-container))  
+  (I added the env vars to the YAML, but it doesn't work)
+- Add a UI for the Docker registry
+- In general, when we use NGINX, we still have to use the manager's IP. Are there solutions to give it a logical name? (Ciro had two to explore)
+
