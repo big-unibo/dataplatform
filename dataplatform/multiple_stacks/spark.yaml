@@ -23,6 +23,7 @@ services:
           - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network 
+      - BIG-dataplatform-attachable-network
 
   spark-worker:
     image: apache/spark:${SPARKVERSION}
@@ -44,7 +45,7 @@ services:
         constraints:
           - node.hostname != CB-Mass-Node1
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
 
   spark-history-server:
     image: apache/spark:${SPARKVERSION}
@@ -73,7 +74,8 @@ services:
           - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
-      
+      - BIG-dataplatform-attachable-network
+
 volumes:
   spark_config:
     driver: local
@@ -81,7 +83,7 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/spark_conf/"
-        
+
   hadoop_config:
     driver: local
     driver_opts:
@@ -93,3 +95,6 @@ networks:
   BIG-dataplatform-network:
     external: true
     name: BIG-dataplatform-network
+  BIG-dataplatform-attachable-network:
+    external: true
+    name: BIG-dataplatform-attachable-network

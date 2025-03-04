@@ -3,7 +3,7 @@ services:
   namenode1:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - ${NAMENODE1PORT}:${NAMENODE1PORT}
+      - ${NAMENODE1PORT_EXT}:${NAMENODE1PORT}
     volumes:
       - namenode1_data:${NAMEDIR}
       - namenode1_config:${HADOOPCONFDIR}
@@ -42,12 +42,13 @@ services:
           - node.hostname != CB-Mass-Node1
           - node.labels.running_namenode2==0
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
     
   namenode2:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - ${NAMENODE2PORT}:${NAMENODE2PORT}
+      - ${NAMENODE2PORT_EXT}:${NAMENODE2PORT}
     volumes:
       - namenode2_data:${NAMEDIR}
       - namenode2_config:${HADOOPCONFDIR}
@@ -73,7 +74,8 @@ services:
           - node.hostname != CB-Mass-Node1
           - node.labels.running_namenode1==0
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   journal1:
     image: apache/hadoop:${HADOOPVERSION}
@@ -96,6 +98,7 @@ services:
           - node.labels.running_journal3==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   journal2:
     image: apache/hadoop:${HADOOPVERSION}
@@ -117,7 +120,8 @@ services:
           - node.labels.running_journal1==0
           - node.labels.running_journal3==0
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   journal3:
     image: apache/hadoop:${HADOOPVERSION}
@@ -140,6 +144,7 @@ services:
           - node.labels.running_journal1==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode1:
     image: apache/hadoop:${HADOOPVERSION}
@@ -174,6 +179,7 @@ services:
           - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode2:
     image: apache/hadoop:${HADOOPVERSION}
@@ -208,6 +214,7 @@ services:
           - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode3:
     image: apache/hadoop:${HADOOPVERSION}
@@ -243,6 +250,7 @@ services:
 
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode4:
     image: apache/hadoop:${HADOOPVERSION}
@@ -277,6 +285,7 @@ services:
           - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode5:
     image: apache/hadoop:${HADOOPVERSION}
@@ -311,6 +320,7 @@ services:
           - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode6:
     image: apache/hadoop:${HADOOPVERSION}
@@ -345,6 +355,7 @@ services:
           - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode7:
     image: apache/hadoop:${HADOOPVERSION}
@@ -379,6 +390,7 @@ services:
           - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode8:
     image: apache/hadoop:${HADOOPVERSION}
@@ -412,6 +424,7 @@ services:
           - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode9:
     image: apache/hadoop:${HADOOPVERSION}
@@ -445,7 +458,7 @@ services:
           - node.hostname != CB-Mass-Node1
     networks:
       - BIG-dataplatform-network
-
+      - BIG-dataplatform-attachable-network
 volumes:
   namenode1_config:
     driver_opts:
@@ -507,3 +520,6 @@ networks:
   BIG-dataplatform-network:
     external: true
     name: BIG-dataplatform-network
+  BIG-dataplatform-attachable-network:
+    external: true
+    name: BIG-dataplatform-attachable-network
