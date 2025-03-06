@@ -84,6 +84,7 @@ ENV PATH=/opt/miniconda/bin:$PATH
 RUN echo "PATH=${PATH}" >> /etc/environment
 RUN echo "JAVA_HOME=${JAVA_HOME}" >> /etc/environment
 RUN echo "HADOOP_HOME=${HADOOP_HOME}" >> /etc/environment
+RUN echo "HADOOP_CONF_DIR=${HADOOP_CONF_DIR}" >> /etc/environment
 RUN echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> /etc/environment
 RUN echo "SPARK_HOME=${SPARK_HOME}" >> /etc/environment
 RUN echo "SPARK_CONF_DIR=${SPARK_CONF_DIR}" >> /etc/environment
