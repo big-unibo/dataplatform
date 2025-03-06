@@ -43,8 +43,8 @@ volumes:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=192.168.30.249,rw,nfsvers=4,nolock,hard
-      device: :/nfsshare/sshd/
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/sshd/
 
 networks:
   BIG-dataplatform-attachable-network:
