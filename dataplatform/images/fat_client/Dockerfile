@@ -89,7 +89,7 @@ RUN echo "SPARK_HOME=${SPARK_HOME}" >> /etc/environment
 RUN echo "SPARK_CONF_DIR=${SPARK_CONF_DIR}" >> /etc/environment
 
 # Copy configuration script
-COPY config.sh ./
+COPY fat_client/config.sh ./
 
 # Run configuration script
 ENTRYPOINT bash /config.sh
