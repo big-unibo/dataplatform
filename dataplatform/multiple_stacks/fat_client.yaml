@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  fat_client:
+    image: 127.0.0.0:5000/fat_client:v0.0.1
+    networks:
+      - BIG-dataplatform-attachable-network
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - spark_config:${SPARKCONFDIR}
+      - spark_bridge:/home/bridge
+      - authorized_keys:/home/dev/.ssh/
+    ports:
+      - ${FATCLIENTSSHPORT}:22
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/dataplatform_config/hadoop_conf/
+  spark_config:
+    drivel: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/dataplatform_config/spark_conf/
+  spark_bridge:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/spark_bridge/
+  authorized_keys:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=192.168.30.249,rw,nfsvers=4,nolock,hard
+      device: :/nfsshare/sshd/
+
+networks:
+  BIG-dataplatform-attachable-network:
+    external: true
+    name: BIG-dataplatform-attachable-network
+
+
