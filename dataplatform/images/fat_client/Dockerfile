@@ -11,18 +11,6 @@ RUN apt-get update && \
     apt-get install -y nano && \
     rm -rf /var/lib/apt/lists/*
 
-# Create dev user and root user
-RUN useradd -rm -d /home/dev -s /usr/bin/bash -G root,sudo dev && \
-    passwd -d dev && \
-    passwd -d root
-
-# Set up configuration for SSH
-RUN mkdir /var/run/sshd && \
-    mkdir /home/dev/.ssh && \
-    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config && \
-    sed -i 's/#LogLevel INFO/LogLevel DEBUG3/g' /etc/ssh/sshd_config && \
-    echo "export VISIBLE=now" >> /etc/profile
-
 #Install GPU dependencies
 RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
     && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
@@ -89,8 +77,12 @@ RUN echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> /etc/environment
 RUN echo "SPARK_HOME=${SPARK_HOME}" >> /etc/environment
 RUN echo "SPARK_CONF_DIR=${SPARK_CONF_DIR}" >> /etc/environment
 
-# Copy configuration script
-COPY fat_client/config.sh ./
+# Set up configuration for SSH
+RUN mkdir /var/run/sshd
 
-# Run configuration script
-ENTRYPOINT bash /config.sh
+# Copy configuration script
+COPY fat_client/create_users.sh /etc/user-config/
+RUN chmod +x /etc/user-config/create_users.sh
+
+# Run configuration script and start ssh server
+ENTRYPOINT ["/bin/bash", "-c", "/etc/user-config/create_users.sh && /usr/sbin/sshd -D -e"]

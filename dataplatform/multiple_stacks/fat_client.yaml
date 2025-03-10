@@ -9,7 +9,7 @@ services:
       - hadoop_config:${HADOOPCONFDIR}
       - spark_config:${SPARKCONFDIR}
       - spark_bridge:/home/bridge
-      - authorized_keys:/home/dev/.ssh/
+      - ssh_config:/etc/user-config/ssh-keys/
     ports:
       - ${FATCLIENTSSHPORT}:22
     deploy:
@@ -44,12 +44,12 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: :${NFSPATH}/spark_bridge/
-  authorized_keys:
+  ssh_config:
     driver: local
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: :${NFSPATH}/sshd/
+      device: :${NFSPATH}/dataplatform_config/fat_client/ssh_config/
 
 networks:
   BIG-dataplatform-attachable-network:
