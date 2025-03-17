@@ -1,0 +1,21 @@
+
+services:
+  tomcat:
+    build: .
+    container_name: tomcat
+    ports:
+      - "${FILESERVER_PORT}:8080"
+    volumes:
+      - data:/usr/local/tomcat/webapps
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1    
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/tomcat/tomacat9-wars/"
