@@ -4,7 +4,7 @@ services:
     image: apache/hadoop:${HADOOPVERSION}
     volumes:
       - hadoop_config:${HADOOPCONFDIR}
-      - data_to_load:/home/data
+      - hdfs_bridge:/home/hdfs_bridge
     command: ["tail", "-f", "/dev/null"]
     stdin_open: true
     tty: true
@@ -12,7 +12,7 @@ services:
       placement:
         constraints:
           - node.role != manager
-          - node.hostname != CB-Mass-Node1
+          - node.hostname == isi-bigcluster-pnnr-11
     networks:
       - BIG-dataplatform-network
 
@@ -23,12 +23,13 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
-  data_to_load:
+
+  hdfs_bridge:
     driver: local
     driver_opts:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
-      device: ":${NFSPATH}/pnrr_dataplatform/dump/"
+      device: ":${NFSPATH}/hdfs_bridge/"
 
 networks:
   BIG-dataplatform-network:

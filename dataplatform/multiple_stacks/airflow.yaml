@@ -69,47 +69,19 @@ x-airflow-common:
 
 
 services:
-  #  postgres:
-  #  image: postgres:13
-  #  environment:
-  #    POSTGRES_USER: airflow
-  #    POSTGRES_PASSWORD: airflow
-  #    POSTGRES_DB: airflow
-  #  volumes:
-  #    - /mnt/disk1/airflow_postgres_data:/var/lib/postgresql/data
-#     healthcheck:
-#         test: ["CMD", "pg_isready", "-U", "airflow"]
-#         interval: 10s
-#         retries: 5
-#         start_period: 5s
-  #  networks:
-  #    - BIG-dataplatform-network
-  #  deploy:
-  #    placement:
-  #      constraints:
-  #        - node.hostname != CB-Mass-Node1
-  #        - node.labels.test_airflow_postgres==1
-
-
   redis:
     image: redis:latest
     expose:
       - 6379
-#     healthcheck:
-#          test: ["CMD", "redis-cli", "ping"]
-#          interval: 10s
-#          timeout: 30s
-#          retries: 50
-#          start_period: 30s
     networks:
       - BIG-dataplatform-network 
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
-          - node.labels.running_airflow_webserver == 1
+         # - node.labels.running_airflow_webserver == 1
 
-  #https://stackoverflow.com/questions/69316093/how-to-add-new-user-to-docker-image-when-running-distributed-airflow-architectur
+  # https://stackoverflow.com/questions/69316093/how-to-add-new-user-to-docker-image-when-running-distributed-airflow-architectur
   docker-proxy:
     image: w4bo/socat:1.0.0
     command: "TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock"
@@ -123,19 +95,14 @@ services:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
-          - node.labels.running_airflow_webserver == 1
+          - node.role == manager
+         # - node.labels.running_airflow_webserver == 1
 
   airflow-webserver:
     <<: *airflow-common
     command: webserver
     ports:
       - ${AIRFLOW_WEB_SERVER_PORT}:8080
-#    healthcheck:
-#        test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
-#        interval: 30s
-#        timeout: 10s
-#        retries: 5
-#        start_period: 30s
     networks:
       - BIG-dataplatform-network
     deploy:
@@ -147,35 +114,18 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
-#    healthcheck:
-#     test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
-#     interval: 30s
-#     timeout: 10s
-#     retries: 5
-#     start_period: 30s
     networks:
       - BIG-dataplatform-network
-    deploy:
-      placement:
-        constraints:
-          - node.labels.running_airflow_webserver == 1
+   # deploy:
+     # placement:
+        #constraints:
+         # - node.labels.running_airflow_webserver == 1
 
   airflow-worker:
     <<: *airflow-common
-    command: celery worker
-#    healthcheck:
-      # yamllint disable rule:line-length
-#      test:
-#        - "CMD-SHELL"
-#        - 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}" || celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
-#      start_period: 30s
+    command: celery worker --without-gossip
     environment:
       <<: *airflow-common-env
-      # Required to handle warm shutdown of the celery workers properly
-      # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
     networks:
       - BIG-dataplatform-network
@@ -184,30 +134,26 @@ services:
         constraints:
           - node.role == worker
           - node.hostname != CB-Mass-Node1
+      mode: replicated
+      replicas: 3
 
   airflow-triggerer:
     <<: *airflow-common
     command: triggerer
-#    healthcheck:
-#      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
-#      start_period: 30s
     networks:
       - BIG-dataplatform-network
-    deploy:
-      placement:
-        constraints:
-          - node.labels.running_airflow_webserver == 1
+   # deploy:
+      #placement:
+        #constraints:
+          #- node.labels.running_airflow_webserver == 1
 
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
-    # yamllint disable rule:line-length
     command:
       - -c
       - |
+        airflow db init
         if [[ -z "${AIRFLOW_UID}" ]]; then
           echo
           echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
@@ -220,7 +166,6 @@ services:
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
         exec /entrypoint airflow version
-    # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_MIGRATE: 'false' #this is for copy data
@@ -236,24 +181,14 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+      #placement:
+       # constraints:
+         # - node.labels.running_airflow_webserver == 1
       placement:
         constraints:
-          - node.labels.running_airflow_webserver == 1
+          - node.hostname != CB-Mass-Node1
 
-  # cli:
-  #   <<: *airflow-common
-  #   environment:
-  #     <<: *airflow-common-env
-  #     CONNECTION_CHECK_MAX_COUNT: "0"
-  #   # Workaround for entrypoint issue. See: https://github.com/apache/airflow/issues/16252
-  #   command:
-  #     - bash
-  #     - -c
-  #     - airflow
-  #   networks:
-  #     - BIG-dataplatform-network 
-
-  
+ 
 networks:
   BIG-dataplatform-network:
     external: true

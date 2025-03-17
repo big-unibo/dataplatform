@@ -3,29 +3,29 @@ services:
   orion:
     init: true
     image: fiware/orion:3.10.1
-    depends_on:
-      - mongodb
     networks:
       - BIG-dataplatform-network
     ports:
       - "${FIWARE_PORT}:1026"
-    command: -corsOrigin __ALL -dbhost mongodb -inReqPayloadMaxSize 5000000
+    command: -corsOrigin __ALL -dbhost ${MONGODB_IP} -inReqPayloadMaxSize 5000000
     deploy:
       placement:
         constraints:
           - node.hostname != CB-Mass-Node1
 
-  mongodb:
-    init: true
-    image: mongo:6.0
-    ports:
-      - "${MONGODB_PORT}:27017"
-    networks:
-      - BIG-dataplatform-network
-    deploy:
-      placement:
-        constraints:
-          - node.hostname != CB-Mass-Node1
+  # mongodb:
+  #   init: true
+  #   image: mongo:6.0
+  #   ports:
+  #     - "${MONGODB_PORT}:27017"
+  #   networks:
+  #     - BIG-dataplatform-network
+  #   # volumes:
+  #   #   - mongodb_volume:/data/db
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.hostname != CB-Mass-Node1
 
   fileserver:
     init: true
@@ -121,8 +121,14 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4
       device: ":${NFSPATH}/pnrr_dataplatform/datalake/"
+  mongodb_volume:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: ":${NFSPATH}/mongodb-data/"
 
 networks:
   BIG-dataplatform-network:
     external: true
     name: BIG-dataplatform-network
+
