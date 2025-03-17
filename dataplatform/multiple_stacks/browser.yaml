@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  browser:
+    image: consol/ubuntu-xfce-vnc
+    ports:
+      - "46901:6901"  # Porta per NoVNC (accesso via web browser)
+    environment:
+      - USER=ubuntu
+      - PASSWORD=vncpassword
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network

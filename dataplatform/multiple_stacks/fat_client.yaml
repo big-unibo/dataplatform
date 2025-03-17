@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+  fat_client:
+    image: alexbaiardi2/ssh-hadoop-spark-client:1.0.0
+    networks:
+      - BIG-dataplatform-attachable-network
+    volumes:
+      - hadoop_config:${HADOOPCONFDIR}
+      - spark_config:${SPARKCONFDIR}
+      - spark_bridge:/home/bridge
+      - ssh_config:/etc/user-config/ssh-keys/
+    ports:
+      - ${FATCLIENTSSHPORT}:22
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+# Uncomment this to enable GPU and use with docker compose in the gpu machines
+# Docker swarm GPU support not available yet 
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities: [gpu]
+
+volumes:
+  hadoop_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/dataplatform_config/hadoop_conf/
+  spark_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/dataplatform_config/spark_conf/
+  spark_bridge:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/spark_bridge/
+  ssh_config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: :${NFSPATH}/dataplatform_config/fat_client/ssh_config/
+
+networks:
+  BIG-dataplatform-attachable-network:
+    external: true
+    name: BIG-dataplatform-attachable-network
+
+

@@ -3,7 +3,7 @@ services:
   namenode1:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - ${NAMENODE1PORT}:${NAMENODE1PORT}
+      - ${NAMENODE1PORT_EXT}:${NAMENODE1PORT}
     volumes:
       - namenode1_data:${NAMEDIR}
       - namenode1_config:${HADOOPCONFDIR}
@@ -42,12 +42,13 @@ services:
           - node.hostname != CB-Mass-Node1
           - node.labels.running_namenode2==0
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
     
   namenode2:
     image: apache/hadoop:${HADOOPVERSION}
     ports:
-      - ${NAMENODE2PORT}:${NAMENODE2PORT}
+      - ${NAMENODE2PORT_EXT}:${NAMENODE2PORT}
     volumes:
       - namenode2_data:${NAMEDIR}
       - namenode2_config:${HADOOPCONFDIR}
@@ -73,7 +74,8 @@ services:
           - node.hostname != CB-Mass-Node1
           - node.labels.running_namenode1==0
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   journal1:
     image: apache/hadoop:${HADOOPVERSION}
@@ -96,6 +98,7 @@ services:
           - node.labels.running_journal3==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   journal2:
     image: apache/hadoop:${HADOOPVERSION}
@@ -117,7 +120,8 @@ services:
           - node.labels.running_journal1==0
           - node.labels.running_journal3==0
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   journal3:
     image: apache/hadoop:${HADOOPVERSION}
@@ -140,6 +144,7 @@ services:
           - node.labels.running_journal1==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode1:
     image: apache/hadoop:${HADOOPVERSION}
@@ -153,21 +158,17 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
           - node.role == worker
           - node.hostname != CB-Mass-Node1
+          - node.hostname != isi-bigcluster-pnnr-11
+          - node.hostname != isi-bigcluster-pnnr-12
           - node.labels.running_datanode2==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
@@ -178,6 +179,7 @@ services:
           - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode2:
     image: apache/hadoop:${HADOOPVERSION}
@@ -191,22 +193,17 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
         constraints:
           - node.role == worker
           - node.hostname != CB-Mass-Node1
+          - node.hostname != isi-bigcluster-pnnr-11
+          - node.hostname != isi-bigcluster-pnnr-12
           - node.labels.running_datanode1==0
           - node.labels.running_datanode3==0
           - node.labels.running_datanode4==0
@@ -217,6 +214,7 @@ services:
           - node.labels.running_namenode2==0
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode3:
     image: apache/hadoop:${HADOOPVERSION}
@@ -230,16 +228,9 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -254,9 +245,12 @@ services:
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
+          - node.hostname != isi-bigcluster-pnnr-11
+          - node.hostname != isi-bigcluster-pnnr-12
 
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode4:
     image: apache/hadoop:${HADOOPVERSION}
@@ -270,15 +264,9 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -293,8 +281,11 @@ services:
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
+          - node.hostname != isi-bigcluster-pnnr-11
+          - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode5:
     image: apache/hadoop:${HADOOPVERSION}
@@ -308,15 +299,9 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -331,8 +316,11 @@ services:
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
+          - node.hostname != isi-bigcluster-pnnr-11
+          - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode6:
     image: apache/hadoop:${HADOOPVERSION}
@@ -346,15 +334,9 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -369,8 +351,11 @@ services:
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
+          - node.hostname != isi-bigcluster-pnnr-11
+          - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   datanode7:
     image: apache/hadoop:${HADOOPVERSION}
@@ -384,15 +369,9 @@ services:
       - -c
       - |
         sleep 30
-        sudo mkdir -p ${DATADIR}
-        sudo chown hadoop ${DATADIR}
         sudo chown hadoop ${DATANODEDIR1}
         sudo chown hadoop ${DATANODEDIR2}
         sudo chown hadoop ${DATANODEDIR3}
-        if [ ! -d ${DATADIR} ]; then
-          echo "Datanode data directory not found: ${DATADIR}"
-          #exit 2
-        fi
         hdfs --config ${HADOOPCONFDIR} datanode
     deploy:
       placement:
@@ -407,9 +386,79 @@ services:
           - node.labels.running_namenode1==0
           - node.labels.running_namenode2==0
           - node.hostname != CB-Mass-Node1
+          - node.hostname != isi-bigcluster-pnnr-11
+          - node.hostname != isi-bigcluster-pnnr-12
     networks:
       - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
+  datanode8:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config_2_disks:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        hdfs --config ${HADOOPCONFDIR} datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_datanode9==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.labels.number_of_disks==2
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
+
+  datanode9:
+    image: apache/hadoop:${HADOOPVERSION}
+    volumes:
+      - hadoop_config_2_disks:${HADOOPCONFDIR}
+      - ${DATANODEDISK1}:${DATANODEDIR1}
+      - ${DATANODEDISK2}:${DATANODEDIR2}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 30
+        sudo chown hadoop ${DATANODEDIR1}
+        sudo chown hadoop ${DATANODEDIR2}
+        hdfs --config ${HADOOPCONFDIR} datanode
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.running_datanode1==0
+          - node.labels.running_datanode2==0
+          - node.labels.running_datanode3==0
+          - node.labels.running_datanode4==0
+          - node.labels.running_datanode5==0
+          - node.labels.running_datanode6==0
+          - node.labels.running_datanode7==0
+          - node.labels.running_datanode8==0
+          - node.labels.running_namenode1==0
+          - node.labels.running_namenode2==0
+          - node.labels.number_of_disks==2
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 volumes:
   namenode1_config:
     driver_opts:
@@ -459,8 +508,18 @@ volumes:
       type: nfs
       o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
       device: ":${NFSPATH}/dataplatform_config/hadoop_conf/"
-  
+
+  hadoop_config_2_disks:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4,nolock,hard
+      device: ":${NFSPATH}/dataplatform_config/hadoop_conf_2_disk_datanode/"
+
 networks:
   BIG-dataplatform-network:
     external: true
     name: BIG-dataplatform-network
+  BIG-dataplatform-attachable-network:
+    external: true
+    name: BIG-dataplatform-attachable-network
