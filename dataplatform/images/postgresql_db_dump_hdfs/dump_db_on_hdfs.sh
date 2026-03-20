@@ -15,10 +15,10 @@ set -euo pipefail
 # -------------------------------
 # ENV
 # -------------------------------
-export PGPASSWORD="$PG_PASSWORD"
+export PGPASSWORD="$PGPASSWORD"
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-FILENAME="${PG_DB}_${TIMESTAMP}.dump.gz"
+FILENAME="${PGDATABASE}_${TIMESTAMP}.dump.gz"
 HDFS_PATH="${HDFS_DIR}/${FILENAME}"
 
 echo "Starting streaming backup: $FILENAME"
@@ -26,7 +26,7 @@ echo "Starting streaming backup: $FILENAME"
 # -------------------------------
 # ENSURE HDFS DIR EXISTS
 # -------------------------------
-$HDFS_BIN dfs -mkdir -p "$HDFS_DIR"
+hdfs dfs -mkdir -p "$HDFS_DIR"
 
 # -------------------------------
 # STREAM DUMP → COMPRESS → HDFS
@@ -34,10 +34,10 @@ $HDFS_BIN dfs -mkdir -p "$HDFS_DIR"
 # -Fc already compressed
 # pipefail ensures failure if any stage fails
 pg_dump \
-  -h "$PG_HOST" \
-  -p "$PG_PORT" \
-  -U "$PG_USER" \
-  -d "$PG_DB" \
+  -h "$PGHOST" \
+  -p "$PGPORT" \
+  -U "$PGUSER" \
+  -d "$PGDATABASE" \
   -Fc \
 | hdfs dfs -put -f - "$HDFS_PATH"
 
