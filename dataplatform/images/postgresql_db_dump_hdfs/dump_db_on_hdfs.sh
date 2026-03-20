@@ -43,4 +43,25 @@ pg_dump \
 
 echo "Backup uploaded to HDFS: $HDFS_PATH"
 
+# -------------------------------
+# CLEAN OLD BACKUPS IN HDFS
+# -------------------------------
+RETENTION_DAYS=30
+echo "Cleaning HDFS backups older than $RETENTION_DAYS days"
+
+NOW=$(date +%s)
+
+hdfs dfs -ls "$HDFS_DIR" | while read -r perms repl owner group size date time path; do
+    [ -z "${path:-}" ] && continue
+    FILE_TS=$(date -d "$date $time" +%s 2>/dev/null || echo 0)
+    [ "$FILE_TS" -eq 0 ] && continue
+
+    AGE_DAYS=$(( (NOW - FILE_TS) / 86400 ))
+
+    if [ "$AGE_DAYS" -gt "$RETENTION_DAYS" ]; then
+        echo "Deleting old backup: $path"
+        hdfs dfs -rm -- "$path"
+    fi
+done
+
 echo "Backup process completed successfully"
