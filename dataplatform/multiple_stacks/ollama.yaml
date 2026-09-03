@@ -1,0 +1,11 @@
+services:
+  ollama:
+    image: ollama/ollama:0.33.2
+    ports:
+      - ${OLLAMAPORT}:11434
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+          - node.labels.gpu == 1
+
