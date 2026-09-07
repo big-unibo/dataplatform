@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  graphdb:
+    image: khaller/graphdb-free:10.8.4
+    ports:
+      - "${GRAPHDB_PORT}:7200"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname != CB-Mass-Node1
+    volumes:
+      - graphdb_data:/opt/graphdb/data  # salva i dati in volume persistente
+    networks:
+      - BIG-dataplatform-network
+
+volumes:
+  graphdb_data:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/dataplatform_config/graphdb/
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
