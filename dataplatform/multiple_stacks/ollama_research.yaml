@@ -1,0 +1,14 @@
+services:
+  ollama:
+    image: ollama/ollama:0.40.3
+    ports:
+      - ${OLLAMAPORT_RESEARCH}:11434
+    volumes:
+      - ollama_models:/root/.ollama
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == isi-bigcluster-pnnr-12
+
+volumes:
+  ollama_models:
