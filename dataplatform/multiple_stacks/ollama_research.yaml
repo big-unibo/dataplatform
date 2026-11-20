@@ -5,6 +5,8 @@ services:
       - ${OLLAMAPORT_RESEARCH}:11434
     volumes:
       - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_MAX_LOADED_MODELS=5
     deploy:
       placement:
         constraints:
