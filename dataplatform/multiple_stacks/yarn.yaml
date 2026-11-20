@@ -35,7 +35,8 @@ services:
         constraints:
           - node.hostname != CB-Mass-Node1
     networks:
-      - BIG-dataplatform-network 
+      - BIG-dataplatform-network
+      - BIG-dataplatform-attachable-network
 
   historyserver:
     image: apache/hadoop:${HADOOPVERSION}
