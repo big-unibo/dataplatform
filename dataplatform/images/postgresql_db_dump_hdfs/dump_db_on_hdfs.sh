@@ -46,7 +46,7 @@ echo "Backup uploaded to HDFS: $HDFS_PATH"
 # -------------------------------
 # CLEAN OLD BACKUPS IN HDFS
 # -------------------------------
-RETENTION_DAYS=30
+RETENTION_DAYS=7
 echo "Cleaning HDFS backups older than $RETENTION_DAYS days"
 
 NOW=$(date +%s)
