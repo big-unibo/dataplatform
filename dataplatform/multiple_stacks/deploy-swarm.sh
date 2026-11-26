@@ -52,6 +52,6 @@ do
         # Altrimenti, effettua la sostituzione delle variabili di ambiente
         envsubst < "${stack}.yaml" > "runtime/${stack}-subs.yaml"
         # Deploya lo stack
-        docker stack deploy -c "runtime/${stack}-subs.yaml" "${ENVIRONMENTNAME}-${stack}"
+        docker stack deploy --with-registry-auth -c "runtime/${stack}-subs.yaml" "${ENVIRONMENTNAME}-${stack}"
     fi
 done
