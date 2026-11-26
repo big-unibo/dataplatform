@@ -1,15 +1,14 @@
 services:
   ollama:
-    image: ollama/ollama:0.33.2
+    image: ollama/ollama:0.40.3
     ports:
-      - ${OLLAMAPORT}:11434
+      - ${OLLAMAPORT_STUDENT}:11434
     volumes:
       - ollama_models:/root/.ollama
     deploy:
       placement:
         constraints:
-          - node.hostname != CB-Mass-Node1
-          - node.labels.gpu == 1
+          - node.hostname == isi-bigcluster-pnnr-11
 
 volumes:
   ollama_models:
